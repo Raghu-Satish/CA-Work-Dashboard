@@ -1,0 +1,3003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CA Office Work Tracker &amp; Billing Management System</title>
+<style>
+:root {
+  --primary: #1e3a8a;
+  --primary-light: #2563eb;
+  --primary-subtle: #eff6ff;
+  --secondary: #0f766e;
+  --accent: #d97706;
+  --danger: #dc2626;
+  --success: #16a34a;
+  --warning: #ca8a04;
+  --bg: #f8fafc;
+  --card-bg: #ffffff;
+  --border: #e2e8f0;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --sidebar-w: 250px;
+  --radius: 8px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; }
+body { background: var(--bg); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; font-size: 13.5px; }
+
+/* Sidebar */
+#sidebar {
+  width: var(--sidebar-w);
+  background: #0f172a;
+  color: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  border-right: 1px solid #1e293b;
+  z-index: 20;
+}
+.firm-brand {
+  padding: 18px 16px;
+  border-bottom: 1px solid #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.brand-logo-img {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #ffffff;
+  border: 1px solid #334155;
+}
+.brand-avatar {
+  width: 42px;
+  height: 42px;
+  background: linear-gradient(135deg, #2563eb, #0f766e);
+  color: white;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.firm-name { font-weight: 700; font-size: 14px; line-height: 1.2; color: #fff; }
+.firm-sub { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+
+.nav-menu { list-style: none; padding: 12px 8px; overflow-y: auto; flex-grow: 1; }
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  margin-bottom: 3px;
+  border-radius: 6px;
+  color: #cbd5e1;
+  text-decoration: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+.nav-item:hover { background: #1e293b; color: #fff; }
+.nav-item.active { background: var(--primary); color: #fff; }
+.nav-item .badge { margin-left: auto; background: #dc2626; color: white; padding: 2px 7px; border-radius: 12px; font-size: 10px; font-weight: 700; }
+
+/* Top Header */
+#main-wrap { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; }
+header.topbar {
+  height: 58px;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  flex-shrink: 0;
+  gap: 15px;
+}
+.top-search-box {
+  display: flex;
+  align-items: center;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 5px 14px;
+  width: 320px;
+}
+.top-search-box input {
+  border: none;
+  outline: none;
+  background: transparent;
+  width: 100%;
+  font-size: 12.5px;
+  margin-left: 8px;
+}
+.topbar-controls { display: flex; align-items: center; gap: 10px; }
+.fy-selector {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f1f5f9;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.btn-lock {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: 0.15s;
+}
+.btn-lock.unlocked { background: #dcfce7; border-color: #86efac; color: #166534; }
+.btn-lock.locked { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
+
+#sync-status-indicator {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: #f1f5f9;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+/* Security on Locked Financial Figures */
+.locked-sensitive.is-locked {
+  filter: blur(5px) !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  pointer-events: none !important;
+}
+
+/* Content Area */
+main#workspace {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 20px;
+  background: var(--bg);
+}
+.view-panel { display: none; }
+.view-panel.active { display: block; }
+
+/* Cards & Layout */
+.grid-cards-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 20px; }
+.stat-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  position: relative;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+.stat-card.alert { border-left: 4px solid var(--danger); }
+.stat-card.warning { border-left: 4px solid var(--accent); }
+.stat-card.success { border-left: 4px solid var(--success); }
+.stat-card.info { border-left: 4px solid var(--primary); }
+.stat-label { font-size: 11.5px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-val { font-size: 23px; font-weight: 700; margin: 4px 0 2px; }
+.stat-sub { font-size: 11.5px; color: var(--text-muted); }
+
+/* Tables */
+.table-container {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow-x: auto;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+table.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 12.5px;
+}
+table.data-table th {
+  background: #f8fafc;
+  padding: 10px 12px;
+  border-bottom: 2px solid var(--border);
+  font-weight: 600;
+  color: #334155;
+  white-space: nowrap;
+}
+table.data-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+table.data-table tbody tr:hover { background: #f8fafc; }
+
+/* Status Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.badge-danger { background: #fee2e2; color: #991b1b; }
+.badge-warning { background: #fef3c7; color: #92400e; }
+.badge-success { background: #dcfce7; color: #166534; }
+.badge-primary { background: #eff6ff; color: #1e40af; }
+.badge-muted { background: #f1f5f9; color: #475569; }
+.badge-purple { background: #f3e8ff; color: #6b21a8; }
+.badge-cyan { background: #ecfeff; color: #0e7490; }
+
+/* Action Buttons */
+.btn {
+  padding: 6px 12px;
+  border-radius: 5px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: 0.15s;
+}
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-light); }
+.btn-outline { background: #fff; border-color: var(--border); color: #334155; }
+.btn-outline:hover { background: #f8fafc; border-color: #cbd5e1; }
+.btn-danger { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+.btn-danger:hover { background: #fecaca; }
+.btn-sm { padding: 3px 8px; font-size: 11px; }
+
+/* Communication Buttons */
+.btn-wa {
+  background: #25d366;
+  color: white;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 3px 7px;
+  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+}
+.btn-wa:hover { background: #1eb956; color: white; }
+.btn-mail {
+  background: #0284c7;
+  color: white;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 3px 7px;
+  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+}
+.btn-mail:hover { background: #0369a1; color: white; }
+
+/* Modals */
+.modal-backdrop {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(15, 23, 42, 0.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 15px;
+}
+.modal-backdrop.show { display: flex; }
+.modal-box {
+  background: #fff;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+.modal-box.modal-lg { max-width: 900px; }
+.modal-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+}
+.modal-title { font-size: 15px; font-weight: 700; color: #1e293b; }
+.modal-body { padding: 18px; overflow-y: auto; }
+.modal-footer {
+  padding: 12px 18px;
+  border-top: 1px solid var(--border);
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* Forms */
+.form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-group.full { grid-column: span 2; }
+.form-label { font-size: 11.5px; font-weight: 600; color: #475569; }
+.form-control {
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  font-size: 12.5px;
+  outline: none;
+  background: #fff;
+}
+.form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(37,99,235,0.15); }
+.inline-btn-group { display: flex; gap: 5px; }
+
+/* Calendar */
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; background: #cbd5e1; border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden; }
+.cal-day-name { background: #f1f5f9; padding: 8px; text-align: center; font-weight: 700; font-size: 12px; color: #475569; }
+.cal-cell { background: #fff; min-height: 80px; padding: 6px; font-size: 11px; display: flex; flex-direction: column; gap: 4px; cursor: pointer; }
+.cal-cell.today { background: #f0fdf4; border: 1px solid #86efac; }
+.cal-cell.other-month { background: #f8fafc; color: #94a3b8; }
+.cal-item { padding: 2px 4px; border-radius: 3px; font-size: 10px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Print Styles */
+@media print {
+  body { overflow: visible !important; background: white !important; }
+  #sidebar, .topbar, .btn, .no-print { display: none !important; }
+  #main-wrap { overflow: visible !important; }
+  #workspace { overflow: visible !important; padding: 0 !important; }
+  .view-panel { display: block !important; }
+  .print-header { display: block !important; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+}
+.print-header { display: none; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside id="sidebar">
+  <div class="firm-brand">
+    <div id="brand-logo-container"><div class="brand-avatar">DA</div></div>
+    <div style="overflow:hidden">
+      <div class="firm-name" id="sidebar-firm-name">DAMACHARLA &amp; CO</div>
+      <div class="firm-sub">Chartered Accountants</div>
+    </div>
+  </div>
+
+  <ul class="nav-menu">
+    <li class="nav-item active" onclick="switchNav('dash')">📊 <span>Dashboard</span></li>
+    <li class="nav-item" onclick="switchNav('work')">📋 <span>Work Tracker</span> <span class="badge" id="badge-overdue">0</span></li>
+    <li class="nav-item" onclick="switchNav('reminders')">🔔 <span>Reminders &amp; Comms</span></li>
+    <li class="nav-item" onclick="switchNav('clients')">👥 <span>Client Master</span></li>
+    <li class="nav-item" onclick="switchNav('staff')">👔 <span>Staff &amp; Allocation</span></li>
+    <li class="nav-item" onclick="switchNav('calendar')">📅 <span>Deadlines Calendar</span></li>
+    <li class="nav-item locked-tab" onclick="switchNav('billing')">💰 <span>Billing &amp; Invoices</span></li>
+    <li class="nav-item locked-tab" onclick="switchNav('collections')">💳 <span>Collections &amp; Ageing</span></li>
+    <li class="nav-item" onclick="switchNav('reports')">📑 <span>Reports</span></li>
+    <li class="nav-item" onclick="switchNav('settings')">⚙️ <span>Firm Settings</span></li>
+  </ul>
+</aside>
+
+<!-- MAIN CONTENT WRAPPER -->
+<div id="main-wrap">
+  <header class="topbar">
+    <div class="top-search-box">
+      <span>🔍</span>
+      <input type="text" id="global-search" placeholder="Search Client, PAN, GSTIN, Staff, Work ID..." oninput="onGlobalSearch(this.value)">
+    </div>
+
+    <div class="topbar-controls">
+      <div id="sync-status-indicator" onclick="syncFromCloud()" title="Click to manually refresh">☁ Synced</div>
+
+      <div class="fy-selector">
+        <span>FY:</span>
+        <select id="fy-filter" class="form-control" style="padding:2px 6px; font-size:11px;" onchange="renderDashboard(); renderWorkTable();"><option value="ALL">All FY</option></select>
+        <button class="btn btn-outline btn-sm" onclick="promptAddFY()" title="Add Financial Year">➕</button>
+      </div>
+
+      <button id="btn-admin-lock" class="btn-lock locked" onclick="toggleAdminLock()">
+        <span id="lock-icon">🔒</span> <span id="lock-text">Billing Locked</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Workspace -->
+  <main id="workspace">
+
+    <!-- 1. DASHBOARD VIEW -->
+    <section id="panel-dash" class="view-panel active">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h2 style="font-size:18px; font-weight:700;">Office Work &amp; Compliance Overview</h2>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-primary" onclick="openWorkModal()">➕ New Assignment</button>
+          <button class="btn btn-outline" onclick="openClientModal()">➕ New Client</button>
+        </div>
+      </div>
+
+      <div class="grid-cards-4">
+        <div class="stat-card info">
+          <div class="stat-label">Active Assignments</div>
+          <div class="stat-val" id="kpi-active-works">0</div>
+          <div class="stat-sub"><span id="kpi-pending-works">0</span> Pending / In-Progress</div>
+        </div>
+        <div class="stat-card alert">
+          <div class="stat-label">Overdue Works</div>
+          <div class="stat-val" id="kpi-overdue-works" style="color:var(--danger)">0</div>
+          <div class="stat-sub">Immediate action required</div>
+        </div>
+        <div class="stat-card warning">
+          <div class="stat-label">Due Today &amp; Next 3 Days</div>
+          <div class="stat-val" id="kpi-due-soon">0</div>
+          <div class="stat-sub"><span id="kpi-due-today">0</span> Due Today</div>
+        </div>
+        <div class="stat-card success locked-sensitive is-locked">
+          <div class="stat-label">Unbilled Completed Works</div>
+          <div class="stat-val" id="kpi-unbilled-works">0</div>
+          <div class="stat-sub" id="kpi-unbilled-amt">Est. ₹•••••• unbilled</div>
+        </div>
+      </div>
+
+      <div class="grid-cards-4 locked-sensitive is-locked">
+        <div class="stat-card">
+          <div class="stat-label">Total Invoiced (FY)</div>
+          <div class="stat-val" id="kpi-billed-amt">₹••••••</div>
+          <div class="stat-sub">Across all registered billings</div>
+        </div>
+        <div class="stat-card success">
+          <div class="stat-label">Fees Collected</div>
+          <div class="stat-val" id="kpi-collected-amt" style="color:var(--success)">₹••••••</div>
+          <div class="stat-sub">Bank &amp; Cash Realized</div>
+        </div>
+        <div class="stat-card alert">
+          <div class="stat-label">Total Outstanding</div>
+          <div class="stat-val" id="kpi-outstanding-amt" style="color:var(--danger)">₹••••••</div>
+          <div class="stat-sub" id="kpi-overdue-receivables">₹•••••• Overdue</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Active Clients</div>
+          <div class="stat-val" id="kpi-active-clients">0</div>
+          <div class="stat-sub"><span id="kpi-clients-pending">0</span> with ongoing work</div>
+        </div>
+      </div>
+
+      <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:14px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <strong style="color:#991b1b; font-size:13px;">⚡ Critical Statutory Deadlines Pending</strong>
+          <p style="font-size:12px; color:#7f1d1d; margin-top:2px;" id="dash-deadline-alert-text">All compliance milestones are healthy and on schedule.</p>
+        </div>
+        <button class="btn btn-danger btn-sm" onclick="switchNav('reminders')">Open Communication Center ➔</button>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <h3 style="font-size:14px; font-weight:700;">Priority Attention Works</h3>
+        <button class="btn btn-outline btn-sm" onclick="switchNav('work')">View All Works ➔</button>
+      </div>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Client</th>
+              <th>Work / Compliance</th>
+              <th>Period</th>
+              <th>Assigned Staff</th>
+              <th>Due Date</th>
+              <th>Ageing / Status</th>
+              <th>Priority</th>
+              <th>Instant Action</th>
+            </tr>
+          </thead>
+          <tbody id="dash-priority-table"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 2. WORK TRACKER VIEW -->
+    <section id="panel-work" class="view-panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
+        <div>
+          <h2 style="font-size:18px; font-weight:700;">Work / Assignment Master Tracker</h2>
+          <p style="font-size:11.5px; color:var(--text-muted)">Manage status, allocations, deadlines, and direct client reminders</p>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-primary" onclick="openWorkModal()">➕ Assign Work</button>
+          <button class="btn btn-outline" onclick="exportWorksCSV()">📥 Export CSV</button>
+        </div>
+      </div>
+
+      <div style="background:#fff; border:1px solid var(--border); border-radius:6px; padding:10px; margin-bottom:14px; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <select id="filter-work-client" class="form-control" style="font-size:11.5px;" onchange="renderWorkTable()"><option value="ALL">All Clients</option></select>
+        <select id="filter-work-staff" class="form-control" style="font-size:11.5px;" onchange="renderWorkTable()"><option value="ALL">All Staff</option></select>
+        <select id="filter-work-status" class="form-control" style="font-size:11.5px;" onchange="renderWorkTable()">
+          <option value="ALL">All Statuses</option>
+          <option value="Pending">Pending / In-Progress</option>
+          <option value="Completed">Completed / Filed</option>
+          <option value="Overdue">Overdue</option>
+        </select>
+        <select id="filter-work-priority" class="form-control" style="font-size:11.5px;" onchange="renderWorkTable()">
+          <option value="ALL">All Priorities</option>
+          <option value="Critical">Critical</option>
+          <option value="High">High</option>
+          <option value="Medium">Medium</option>
+          <option value="Low">Low</option>
+        </select>
+        <select id="filter-work-unbilled" class="form-control" style="font-size:11.5px;" onchange="renderWorkTable()">
+          <option value="ALL">All Billing Status</option>
+          <option value="UNBILLED">Completed but Unbilled</option>
+          <option value="BILLED">Billed</option>
+        </select>
+        <button class="btn btn-outline btn-sm" onclick="resetWorkFilters()">Reset Filters</button>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table" id="main-work-table">
+          <thead>
+            <tr>
+              <th>Work ID</th>
+              <th>Client</th>
+              <th>Discipline &amp; Type</th>
+              <th>Period</th>
+              <th>Assigned Staff</th>
+              <th>Due Date</th>
+              <th>Ageing</th>
+              <th>Status</th>
+              <th>Priority</th>
+              <th class="locked-sensitive is-locked">Fee / Outstanding</th>
+              <th>Send Reminder</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="work-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 3. REMINDERS & COMMUNICATIONS VIEW -->
+    <section id="panel-reminders" class="view-panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <div>
+          <h2 style="font-size:18px; font-weight:700;">WhatsApp &amp; Email Communications Hub</h2>
+          <p style="font-size:11.5px; color:var(--text-muted)">Zero-cost direct WhatsApp Web and Email dispatcher with pre-filled drafts</p>
+        </div>
+      </div>
+
+      <div class="grid-cards-4">
+        <div class="stat-card alert">
+          <div class="stat-label">Client Reminders (Overdue)</div>
+          <div class="stat-val" id="comm-overdue-count">0</div>
+          <div class="stat-sub">Filing deadlines crossed</div>
+        </div>
+        <div class="stat-card warning">
+          <div class="stat-label">Pending Client Documents</div>
+          <div class="stat-val" id="comm-doc-pending-count">0</div>
+          <div class="stat-sub">Books / 2B / statements needed</div>
+        </div>
+        <div class="stat-card info">
+          <div class="stat-label">Staff Follow-Ups</div>
+          <div class="stat-val" id="comm-staff-pending-count">0</div>
+          <div class="stat-sub">Tasks pending allocation/review</div>
+        </div>
+        <div class="stat-card locked-sensitive is-locked success">
+          <div class="stat-label">Fee Collection Reminders</div>
+          <div class="stat-val" id="comm-fee-overdue-count">0</div>
+          <div class="stat-sub">Invoices pending payment</div>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 2fr 1fr; gap:16px;">
+        <div class="table-container">
+          <div style="padding:10px 14px; background:#f8fafc; border-bottom:1px solid var(--border); font-weight:700; font-size:13px;">
+            Immediate Client Dispatch Queue (Due Soon &amp; Overdue)
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Client</th>
+                <th>Work</th>
+                <th>Due Date</th>
+                <th>Days</th>
+                <th>Client Contact</th>
+                <th>Send Action</th>
+              </tr>
+            </thead>
+            <tbody id="comm-queue-body"></tbody>
+          </table>
+        </div>
+
+        <div style="background:#fff; border:1px solid var(--border); border-radius:8px; padding:16px;">
+          <h3 style="font-size:14px; font-weight:700; margin-bottom:8px;">End-of-Day Staff Digest</h3>
+          <p style="font-size:11.5px; color:var(--text-muted); margin-bottom:14px;">Select a team member to compile their pending works into a single summary WhatsApp message or follow-up email.</p>
+
+          <div class="form-group" style="margin-bottom:12px;">
+            <label class="form-label">Select Staff Member</label>
+            <select id="comm-staff-select" class="form-control" onchange="previewStaffDigest()"></select>
+          </div>
+
+          <div class="form-group" style="margin-bottom:12px;">
+            <label class="form-label">Compiled Summary Preview</label>
+            <textarea id="comm-staff-digest-preview" class="form-control" style="height:120px; font-size:11.5px;" readonly=""></textarea>
+          </div>
+
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-wa" style="flex:1; justify-content:center;" onclick="sendStaffDigestWA()">📱 WhatsApp Digest</button>
+            <button class="btn btn-mail" style="flex:1; justify-content:center;" onclick="sendStaffDigestMail()">✉️ Email Digest</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. CLIENT MASTER VIEW -->
+    <section id="panel-clients" class="view-panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
+        <div>
+          <h2 style="font-size:18px; font-weight:700;">Client Master Directory</h2>
+          <p style="font-size:11.5px; color:var(--text-muted)">Manage business entities, legal constitutions, contact channels, and defaults</p>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-primary" onclick="openClientModal()">➕ Add Client</button>
+          <button class="btn btn-outline" onclick="downloadClientTemplate()">📥 CSV Template</button>
+          <label class="btn btn-outline" style="cursor:pointer;">
+            📤 Import CSV <input type="file" id="client-csv-input" accept=".csv" style="display:none" onchange="importClientCSV(event)">
+          </label>
+          <button class="btn btn-outline" onclick="exportClientsCSV()">📥 Export CSV</button>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Client ID</th>
+              <th>Client / Trade Name</th>
+              <th>Constitution</th>
+              <th>PAN / GSTIN</th>
+              <th>Contact Person</th>
+              <th>Mobile &amp; Email</th>
+              <th>Category</th>
+              <th>Status</th>
+              <th>Instant Connect</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="client-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 5. STAFF MASTER & ALLOCATION -->
+    <section id="panel-staff" class="view-panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <div>
+          <h2 style="font-size:18px; font-weight:700;">Staff Master &amp; Workload Distribution</h2>
+          <p style="font-size:11.5px; color:var(--text-muted)">Monitor partner, manager, and article allocations, overdue tasks, and targets</p>
+        </div>
+        <button class="btn btn-primary" onclick="openStaffModal()">➕ Add Staff Member</button>
+      </div>
+
+      <div class="grid-cards-4" id="staff-summary-cards"></div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Staff Name</th>
+              <th>Designation</th>
+              <th>Department</th>
+              <th>Assigned Tasks</th>
+              <th>Pending / In Progress</th>
+              <th>Overdue</th>
+              <th>Completed</th>
+              <th>Mobile &amp; Email</th>
+              <th>Direct Follow-up</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="staff-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 6. CALENDAR VIEW -->
+    <section id="panel-calendar" class="view-panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <div>
+          <h2 style="font-size:18px; font-weight:700;">Deadlines &amp; Statutory Calendar</h2>
+          <p style="font-size:11.5px; color:var(--text-muted)">Visual monthly schedule of GST, Tax, Audit, and MCA compliance due dates</p>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button class="btn btn-outline btn-sm" onclick="changeCalMonth(-1)">◀ Prev</button>
+          <span id="cal-month-title" style="font-weight:700; font-size:13px; min-width:120px; text-align:center;">Month Year</span>
+          <button class="btn btn-outline btn-sm" onclick="changeCalMonth(1)">Next ▶</button>
+          <button class="btn btn-outline btn-sm" onclick="resetCalToToday()">Today</button>
+        </div>
+      </div>
+
+      <div class="cal-grid" id="calendar-grid"></div>
+    </section>
+
+    <!-- 7. BILLING VIEW (PASSWORD GATED) -->
+    <section id="panel-billing" class="view-panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <div>
+          <h2 style="font-size:18px; font-weight:700;">Billing &amp; Invoicing Register</h2>
+          <p style="font-size:11.5px; color:var(--text-muted)">Fee accounting, GST invoices, and unbilled work detection</p>
+        </div>
+        <button class="btn btn-outline" onclick="exportBillingCSV()">📥 Export Billing CSV</button>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Work ID</th>
+              <th>Client</th>
+              <th>Work Description</th>
+              <th>Invoice No</th>
+              <th>Invoice Date</th>
+              <th>Taxable Value</th>
+              <th>GST (18%)</th>
+              <th>Total Invoice</th>
+              <th>Amount Received</th>
+              <th>Outstanding</th>
+              <th>Payment Status</th>
+              <th>Reminder</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="billing-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 8. COLLECTIONS & AGEING VIEW (PASSWORD GATED) -->
+    <section id="panel-collections" class="view-panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <h2 style="font-size:18px; font-weight:700;">Outstanding Receivables &amp; Ageing Analysis</h2>
+      </div>
+
+      <div class="grid-cards-4">
+        <div class="stat-card">
+          <div class="stat-label">Current (0–30 Days)</div>
+          <div class="stat-val" id="age-0-30">₹0</div>
+        </div>
+        <div class="stat-card warning">
+          <div class="stat-label">31–60 Days</div>
+          <div class="stat-val" id="age-31-60">₹0</div>
+        </div>
+        <div class="stat-card alert">
+          <div class="stat-label">61–90 Days</div>
+          <div class="stat-val" id="age-61-90">₹0</div>
+        </div>
+        <div class="stat-card alert" style="background:#fff1f2;">
+          <div class="stat-label">&gt;90 Days Overdue</div>
+          <div class="stat-val" id="age-90-plus">₹0</div>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Client Name</th>
+              <th>Total Invoiced</th>
+              <th>Collected</th>
+              <th>Total Balance</th>
+              <th>Ageing Bucket</th>
+              <th>Contact Person</th>
+              <th>Follow-Up</th>
+            </tr>
+          </thead>
+          <tbody id="ageing-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 9. REPORTS VIEW -->
+    <section id="panel-reports" class="view-panel">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <h2 style="font-size:18px; font-weight:700;">Firm Audit &amp; Management Reports</h2>
+        <button class="btn btn-primary" onclick="window.print()">🖨️ Print / Save PDF</button>
+      </div>
+
+      <div class="print-header">
+        <h1 id="print-firm-title">DAMACHARLA &amp; CO</h1>
+        <p>Chartered Accountants | Office Status &amp; Compliance Report</p>
+        <p style="font-size:11px; margin-top:4px;">Generated on: <span id="print-date"></span></p>
+      </div>
+
+      <div style="background:#fff; border:1px solid var(--border); border-radius:8px; padding:16px;">
+        <div style="display:flex; gap:10px; margin-bottom:16px;">
+          <button class="btn btn-outline active" onclick="loadReportType('pending')">Pending Compliance</button>
+          <button class="btn btn-outline" onclick="loadReportType('overdue')">Overdue Audit</button>
+          <button class="btn btn-outline" onclick="loadReportType('unbilled')">Unbilled Works</button>
+          <button class="btn btn-outline" onclick="loadReportType('staff')">Staff Allocation</button>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table" id="report-output-table">
+            <thead id="report-head"></thead>
+            <tbody id="report-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10. FIRM SETTINGS VIEW -->
+    <section id="panel-settings" class="view-panel">
+      <h2 style="font-size:18px; font-weight:700; margin-bottom:14px;">Firm Configuration, Security &amp; Backups</h2>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div style="background:#fff; border:1px solid var(--border); border-radius:8px; padding:16px;">
+          <h3 style="font-size:14px; font-weight:700; margin-bottom:10px;">Firm Identification &amp; Letterhead</h3>
+          <div class="form-grid">
+            <div class="form-group full">
+              <label class="form-label">Firm Logo (JPG / PNG)</label>
+              <div style="display:flex; gap:10px; align-items:center;">
+                <input type="file" id="setting-logo-input" accept="image/*" class="form-control" onchange="onUploadLogo(event)">
+                <button class="btn btn-outline btn-sm" onclick="resetFirmLogo()">Reset Logo</button>
+              </div>
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Firm Legal Name</label>
+              <input type="text" id="setting-firm-name" class="form-control" value="DAMACHARLA &amp; CO.">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Firm Registration / GSTIN</label>
+              <input type="text" id="setting-firm-gstin" class="form-control" placeholder="36AAACD1234E1Z0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Official Phone / Mobile</label>
+              <input type="text" id="setting-firm-phone" class="form-control" placeholder="+91 9876543210">
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Office Address</label>
+              <textarea id="setting-firm-addr" class="form-control" style="height:50px;">Flat 301, Sri Ram Towers, Hyderabad, Telangana</textarea>
+            </div>
+            <div class="form-group full">
+              <button class="btn btn-primary" onclick="saveFirmSettings()">Save Firm Profile</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#fff; border:1px solid var(--border); border-radius:8px; padding:16px;">
+          <h3 style="font-size:14px; font-weight:700; margin-bottom:10px;">Security &amp; Authorization PIN</h3>
+          <p style="font-size:11.5px; color:var(--text-muted); margin-bottom:12px;">Controls billing visibility and deletion privileges. Default: <code>ca1234</code></p>
+          <div class="form-grid">
+            <div class="form-group full">
+              <label class="form-label">Current Password</label>
+              <input type="password" id="pwd-current" class="form-control" placeholder="Enter current password">
+            </div>
+            <div class="form-group">
+              <label class="form-label">New Password</label>
+              <input type="password" id="pwd-new" class="form-control" placeholder="New password">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirm New Password</label>
+              <input type="password" id="pwd-confirm" class="form-control" placeholder="Re-enter new password">
+            </div>
+            <div class="form-group full">
+              <button class="btn btn-primary" onclick="updateAdminPassword()">Update Security Password</button>
+            </div>
+          </div>
+
+          <hr style="margin:16px 0; border:none; border-top:1px solid var(--border);">
+
+          <h3 style="font-size:14px; font-weight:700; margin-bottom:10px;">Data Backup &amp; Recovery</h3>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn btn-outline" onclick="exportFullJSONBackup()">💾 Download JSON Backup</button>
+            <label class="btn btn-outline" style="cursor:pointer;">
+              📂 Restore Backup <input type="file" id="restore-file-input" accept=".json" style="display:none" onchange="restoreJSONBackup(event)">
+            </label>
+            <button class="btn btn-danger" onclick="confirmWipeAllData()">⚠️ Wipe All Data</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- MODALS -->
+
+<!-- 1. WORK ASSIGNMENT MODAL -->
+<div class="modal-backdrop" id="modal-work">
+  <div class="modal-box modal-lg">
+    <div class="modal-header">
+      <div class="modal-title" id="work-modal-title">New Work Assignment</div>
+      <button class="btn btn-outline btn-sm" onclick="closeModal('modal-work')">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="form-work" onsubmit="saveWorkItem(event)">
+        <input type="hidden" id="work-edit-id">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Client Name *</label>
+            <select id="w-client" class="form-control" required=""></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Financial Year *</label>
+            <div class="inline-btn-group">
+              <select id="w-fy" class="form-control" required=""></select>
+              <button type="button" class="btn btn-outline btn-sm" onclick="promptAddFY()">➕</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Work Category / Discipline *</label>
+            <div class="inline-btn-group">
+              <select id="w-category" class="form-control" onchange="onCategoryChange()" required=""></select>
+              <button type="button" class="btn btn-outline btn-sm" onclick="promptAddCategory()">➕</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Work Type *</label>
+            <div class="inline-btn-group">
+              <select id="w-type" class="form-control" required=""></select>
+              <button type="button" class="btn btn-outline btn-sm" onclick="promptAddType()">➕</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Period / Month / Quarter *</label>
+            <input type="text" id="w-period" class="form-control" placeholder="e.g. September 2026 / Q2 FY26-27" required="">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Due Date *</label>
+            <input type="date" id="w-due-date" class="form-control" required="" onchange="autoSuggestPriority()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Assigned Staff *</label>
+            <select id="w-staff" class="form-control" required=""></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Reviewer (Partner / Manager)</label>
+            <select id="w-reviewer" class="form-control"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status *</label>
+            <select id="w-status" class="form-control" required="">
+              <option value="Not Started">Not Started</option>
+              <option value="Pending Client Data">Pending Client Data</option>
+              <option value="Assigned">Assigned</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Under Review">Under Review</option>
+              <option value="Corrections Required">Corrections Required</option>
+              <option value="Ready for Filing">Ready for Filing</option>
+              <option value="Filed">Filed</option>
+              <option value="Completed">Completed</option>
+              <option value="On Hold">On Hold</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Priority *</label>
+            <select id="w-priority" class="form-control" required="">
+              <option value="Critical">Critical (Immediate / Today)</option>
+              <option value="High">High (Within 2 days)</option>
+              <option value="Medium">Medium (Within 7 days)</option>
+              <option value="Low">Low (&gt; 7 days)</option>
+            </select>
+          </div>
+
+          <div class="form-group full" style="background:#f8fafc; padding:10px; border-radius:6px; border:1px solid var(--border);">
+            <div style="font-weight:700; font-size:12px; margin-bottom:6px; color:#1e3a8a;">Billing &amp; Fees (Locked to Unauthorized Staff)</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Agreed Professional Fee (₹)</label>
+                <input type="number" id="w-fee" class="form-control" placeholder="5000">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Invoice Number</label>
+                <input type="text" id="w-invoice-no" class="form-control" placeholder="DAC/26-27/0001">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Amount Received (₹)</label>
+                <input type="number" id="w-received" class="form-control" placeholder="0">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Billing Status</label>
+                <select id="w-billing-status" class="form-control">
+                  <option value="Not Billed">Not Billed</option>
+                  <option value="Billed">Billed</option>
+                  <option value="Partially Paid">Partially Paid</option>
+                  <option value="Paid">Paid</option>
+                  <option value="Waived">Waived</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group full">
+            <label class="form-label">Scope Description / Remarks</label>
+            <textarea id="w-remarks" class="form-control" style="height:45px;" placeholder="Notes or instructions for article/staff..."></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer" style="padding-bottom:0;">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modal-work')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Assignment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 2. CLIENT MASTER MODAL -->
+<div class="modal-backdrop" id="modal-client">
+  <div class="modal-box modal-lg">
+    <div class="modal-header">
+      <div class="modal-title" id="client-modal-title">Client Master</div>
+      <button class="btn btn-outline btn-sm" onclick="closeModal('modal-client')">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="form-client" onsubmit="saveClient(event)">
+        <input type="hidden" id="c-edit-id">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Client / Registered Name *</label>
+            <input type="text" id="c-name" class="form-control" placeholder="ABC Technologies Pvt Ltd" required="">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Trade / Brand Name</label>
+            <input type="text" id="c-trade-name" class="form-control" placeholder="ABC Tech">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Legal Constitution *</label>
+            <select id="c-constitution" class="form-control" required="">
+              <option value="Pvt Ltd">Private Limited (Pvt Ltd)</option>
+              <option value="LLP">Limited Liability Partnership (LLP)</option>
+              <option value="Proprietorship">Sole Proprietorship</option>
+              <option value="Partnership Firm">Partnership Firm</option>
+              <option value="Individual">Individual</option>
+              <option value="HUF">Hindu Undivided Family (HUF)</option>
+              <option value="OPC Pvt Ltd">One Person Company (OPC)</option>
+              <option value="Public Ltd / Listed">Public Limited / Listed</option>
+              <option value="Trust / Society / Sec 8">Trust / Society / Sec 8</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Permanent Account Number (PAN) *</label>
+            <input type="text" id="c-pan" class="form-control" placeholder="ABCDE1234F" style="text-transform:uppercase" required="">
+          </div>
+          <div class="form-group">
+            <label class="form-label">GSTIN</label>
+            <input type="text" id="c-gstin" class="form-control" placeholder="36ABCDE1234F1Z5" style="text-transform:uppercase">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Contact Person</label>
+            <input type="text" id="c-contact-person" class="form-control" placeholder="Mr. Ramesh Rao">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Mobile Number *</label>
+            <input type="text" id="c-mobile" class="form-control" placeholder="9876543210" required="">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email ID *</label>
+            <input type="email" id="c-email" class="form-control" placeholder="accounts@abctech.com" required="">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Client Category</label>
+            <select id="c-category" class="form-control">
+              <option value="GST">GST &amp; Compliance</option>
+              <option value="Income Tax">Income Tax &amp; Audit</option>
+              <option value="Corporate / MCA">Corporate / MCA</option>
+              <option value="Accounting">Accounting &amp; MIS</option>
+              <option value="Comprehensive">Comprehensive / Retainer</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Client Status *</label>
+            <select id="c-status" class="form-control" required="">
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+              <option value="On Hold">On Hold</option>
+              <option value="Closed">Closed</option>
+            </select>
+          </div>
+          <div class="form-group full">
+            <label class="form-label">Address</label>
+            <textarea id="c-address" class="form-control" style="height:45px;" placeholder="Office / registered address"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer" style="padding-bottom:0;">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modal-client')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Client</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 3. STAFF MODAL -->
+<div class="modal-backdrop" id="modal-staff">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="staff-modal-title">Staff Member</div>
+      <button class="btn btn-outline btn-sm" onclick="closeModal('modal-staff')">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="form-staff" onsubmit="saveStaff(event)">
+        <input type="hidden" id="s-edit-id">
+        <div class="form-grid">
+          <div class="form-group full">
+            <label class="form-label">Staff Name *</label>
+            <input type="text" id="s-name" class="form-control" placeholder="K. Suresh" required="">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Designation *</label>
+            <select id="s-desig" class="form-control" required="">
+              <option value="Partner">Partner</option>
+              <option value="Manager">Manager</option>
+              <option value="Senior">Senior</option>
+              <option value="Article Assistant">Article Assistant</option>
+              <option value="Paid Assistant">Paid Assistant</option>
+              <option value="Accountant">Accountant</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Department</label>
+            <select id="s-dept" class="form-control">
+              <option value="GST">GST</option>
+              <option value="Direct Tax">Direct Tax</option>
+              <option value="Audit">Statutory &amp; Internal Audit</option>
+              <option value="MCA / Corporate">MCA / Corporate</option>
+              <option value="Accounts">Accounts &amp; Bookkeeping</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Mobile Number *</label>
+            <input type="text" id="s-mobile" class="form-control" placeholder="9876543210" required="">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email ID</label>
+            <input type="email" id="s-email" class="form-control" placeholder="suresh@damacharla.com">
+          </div>
+        </div>
+        <div class="modal-footer" style="padding-bottom:0;">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modal-staff')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Staff Member</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 4. SECURITY PIN PROMPT MODAL (FORGOT PIN OPTION REMOVED) -->
+<div class="modal-backdrop" id="modal-auth">
+  <div class="modal-box" style="max-width:380px;">
+    <div class="modal-header">
+      <div class="modal-title">🔒 Partner / Admin Security Verification</div>
+      <button class="btn btn-outline btn-sm" onclick="closeModal('modal-auth')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">This action or section requires authorization. Please enter your Security PIN to proceed.</p>
+      <input type="password" id="auth-input-pin" class="form-control" placeholder="Enter PIN (Default: ca1234)" style="font-size:15px; text-align:center; letter-spacing:2px;">
+      
+      <div style="margin-top:10px; display:flex; justify-content:flex-start; align-items:center;">
+        <span id="auth-error-msg" style="color:var(--danger); font-size:11px; font-weight:600;"></span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-auth')">Cancel</button>
+      <button class="btn btn-primary" onclick="verifyAdminPin()">Confirm &amp; Proceed</button>
+    </div>
+  </div>
+</div>
+
+<!-- 5. WORK NOTES & AUDIT MODAL -->
+<div class="modal-backdrop" id="modal-notes">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="notes-title">Work Notes &amp; Activity Log</div>
+      <button class="btn btn-outline btn-sm" onclick="closeModal('modal-notes')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="notes-history-list" style="max-height:200px; overflow-y:auto; margin-bottom:14px; display:flex; flex-direction:column; gap:6px;"></div>
+      <div class="form-group">
+        <label class="form-label">Add Note / Audit Remark</label>
+        <textarea id="new-note-text" class="form-control" placeholder="e.g. Received Purchase Register from client on WhatsApp..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-notes')">Close</button>
+      <button class="btn btn-primary" onclick="addWorkNote()">Add Entry</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= GOOGLE APPS SCRIPT URL ================= */
+const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw52TfU7RYEBBfunx5xt8cGnktZwBb5qWH2FrpRAxO3-PqgUCnRUoi-D-QChqQfTr_V/exec";
+
+/* STORAGE KEYS */
+const STORAGE_KEYS = {
+  CLIENTS: 'ca_clients_data',
+  WORKS: 'ca_works_data',
+  STAFF: 'ca_staff_data',
+  SETTINGS: 'ca_firm_settings',
+  TAXONOMY: 'ca_taxonomy_data',
+  FY_LIST: 'ca_fy_list'
+};
+
+let clients = [];
+let works = [];
+let staff = [];
+let settings = {};
+let taxonomy = {};
+let fyList = [];
+
+let isAdminUnlocked = false;
+let pendingAuthCallback = null;
+let currentCalMonth = new Date().getMonth();
+let currentCalYear = new Date().getFullYear();
+let activeNotesWorkId = null;
+
+const DEFAULT_SETTINGS = {
+  firmName: "DAMACHARLA & CO.",
+  firmGstin: "36AAACD1234E1Z0",
+  firmPhone: "+91 9876543210",
+  firmAddress: "Flat 301, Sri Ram Towers, Hyderabad, Telangana",
+  adminPin: "ca1234",
+  logoBase64: ""
+};
+
+const DEFAULT_FY = ["2024-25", "2025-26", "2026-27", "2027-28", "2022-23", "2023-24"];
+
+const DEFAULT_TAXONOMY = {
+  "GST": ["GSTR-1", "GSTR-3B", "GSTR-9", "GSTR-9C", "GST Reconciliation", "GST Refund", "LUT", "GST Registration", "GST Notice Reply"],
+  "Income Tax": ["ITR Filing", "Tax Audit (Form 3CD)", "TDS Return", "TDS Reconciliation", "15CA/15CB", "Income Tax Notice Reply", "Advance Tax Estimation", "TDS Payment"],
+  "MCA / Corporate": ["AOC-4", "MGT-7 / 7A", "DIR-3 KYC", "DPT-3", "Annual Filing", "Company Incorporation", "LLP Form 11 / 8", "Share Transfers", "Loan to Equity Conversion", "Increase of Authorised Share Capital", "Appointment of Director", "DIN Allotment", "ADT-1", "INC-22", "INC-20A", "Company Closure Filings", "Preparation of Resolutions", "LLP Form 15", "LLP Form 3", "ADT-3", "MGT-14", "PAS-3", "Charge Creation", "Issue of Share Certificates"],
+  "Audit": ["Statutory Audit", "Internal Audit", "Tax Audit", "Stock Audit", "Due Diligence"],
+  "Accounting": ["Monthly Bookkeeping", "Finalisation & Balance Sheet", "MIS Reports", "Bank Reconciliation"],
+  "Advisory": ["Tax Advisory", "GST Advisory", "Corporate Advisory", "Valuation Support"],
+  "EPFO": ["Returns Filings", "Member Additions"],
+  "Professional Tax": ["PT Filings", "Departmental Work"],
+  "Administration": ["Payslips Generation", "Invoice Preparation", "General", "Client Support"],
+  "Certifications": ["Book Debts Certificate"],
+  "IEC/DGFT": ["IEC Application"]
+};
+
+const SAMPLE_STAFF = [
+  { id: "STF-01", name: "CA Venkata Sai Damacharla", designation: "Partner", department: "Audit", mobile: "8105853262", email: "damacharlaandco@gmail.com" },
+  { id: "STF-02", name: "Raghu Satish", designation: "Senior", department: "Audit", mobile: "7975621905", email: "damacharlaandco@gmail.com" },
+  { id: "STF-03", name: "Harsh Pradhan", designation: "Article Assistant", department: "Audit", mobile: "9966934541", email: "damacharlaandco@gmail.com" },
+  { id: "STF-04", name: "Sunil M", designation: "Paid Assistant", department: "Audit", mobile: "8309157023", email: "damacharlaandco@gmail.com" },
+  { id: "STF-05", name: "CS Aakanksha", designation: "Senior", department: "MCA / Corporate", mobile: "9044257582", email: "damacharlaandco@gmail.com" }
+];
+
+/* EMBEDDED PRELOAD DATA (95 CLIENTS & 85 WORKS) */
+const SEED_CLIENT_NAMES = [
+  "SOUTH WEST COLD TECH PRIVATE LIMITED", "RIGHTHAND TECHNOLOGIES LLP", "HIT-HARITHAM INNOVATIVE TECHNOLOGIES LLP",
+  "KRN HIGHWAY MEN LLP", "SOLVYX DIGITECH SOLUTIONS LLP", "TRINI HEALTHCARE LLP", "SAI NAMBIKE HOSPITALITY LLP",
+  "VINAY CHANNEL LLP", "GROAVY BUILDCON LLP", "MECHADYNO TECHNOLOGIES LLP", "DRG URBAN DEVELOPERS LLP",
+  "SAI SHISHIR TOURS LLP", "N-GREEN TECH LLP", "ONEBAB AI LLP", "RUA INNOVATIONS LLP", "NETSUKE AI LLP",
+  "SipraGrow LLP", "SVAG PET HOMES LLP", "SRI VARNIKA GLOBAL SOLUTIONS PRIVATE LIMITED", "AR SASTRI BUILTCON PRIVATE LIMITED",
+  "ZENITHSTER MEDIA VENTURES PRIVATE LIMITED", "HCUBE WOWCARZ PRIVATE LIMITED", "AHAM AGRITECH PRIVATE LIMITED",
+  "IBASE INDIA SOFTWARE SOLUTIONS PRIVATE LIMITED", "IBASE SOFTWARE RAM INDIA PRIVATE LIMITED",
+  "RAMACHANDRA RAO YERNENI (OPC) PRIVATE LIMITED", "QATTS TECHNOLOGIES PRIVATE LIMITED",
+  "QANTTYS SOFTWARE SOLUTIONS INDIA PRIVATE LIMITED", "SIPRAHUB (OPC) PRIVATE LIMITED", "CORPUS ENTERPRISES PRIVATE LIMITED",
+  "CORPUS MEDIA LABS (INDIA) PRIVATE LIMITED", "CORPUS E-READY SOLUTIONS PRIVATE LIMITED", "HARSHINI ESTATES PRIVATE LIMITED",
+  "KALPIN ELECTRONIX PRIVATE LIMITED", "KONCOR LABS PRIVATE LIMITED", "TUMMALA ENTERPRISES PRIVATE LIMITED",
+  "WINMAX ELECTRONICS PRIVATE LIMITED", "DIGITAL EMPOWERMENT SERVICE HUBS PRIVATE LIMITED",
+  "TRADITIONAL OIL PROJECT INDIA PRIVATE LIMITED", "BLOOMY DESIGNS AND FASHIONS PRIVATE LIMITED",
+  "VIGILANCE 24X7 SECURITY AND ALLIED SERVICES PRIVATE LIMITED", "GENZ INFOTECH PRIVATE LIMITED",
+  "ALTICE LABS INDIA PRIVATE LIMITED", "KOFFEE MEDIA PRIVATE LIMITED", "NET INDIA PRIVATE LIMITED",
+  "FUTURE SPACE INDIA PRIVATE LIMITED", "3RDI TECHNOLOGIES PRIVATE LIMITED", "ALERTFUSION PRIVATE LIMITED",
+  "AMA TECHNOSOLUTIONS PRIVATE LIMITED", "WHITESPACE INVESTMENTS PRIVATE LIMITED", "ATHIRA DIGITAL PRIVATE LIMITED",
+  "ATHIRA TECHNOLOGIES PRIVATE LIMITED", "SOCVIEW SOLUTIONS PRIVATE LIMITED", "SRI DURGA AMBIKA VENTURES PRIVATE LIMITED",
+  "QUANTUM CODE LABS PRIVATE LIMITED", "QUANTUM LOGIC SOLUTIONS PRIVATE LIMITED", "IQLONE TECHNOLOGIES PRIVATE LIMITED",
+  "OTSI USM PRIVATE LIMITED", "SPLINK AI PRIVATE LIMITED", "UNIOME PRIVATE LIMITED", "GROAVY BUILDERS PRIVATE LIMITED",
+  "RVSG SOLUTIONS PRIVATE LIMITED", "UPPALAPATI SONS PRIVATE LIMITED", "VAARAHI BUILDWORKS PRIVATE LIMITED",
+  "DATAVANI PRIVATE LIMITED", "KASA HEALTHCARE PRIVATE LIMITED", "LYNXTECH INDIA PRIVATE LIMITED",
+  "BHAVISHYA BUSINESS CORP PRIVATE LIMITED", "BIT BYTE BUILD PRIVATE LIMITED", "PROJECT NEXUS PRIVATE LIMITED",
+  "SKR ELECTMARKET PRIVATE LIMITED", "SMART WAVES ELECTRONICS PRIVATE LIMITED", "SMART WAVES TECHNOLOGIES PRIVATE LIMITED",
+  "TRINI HEALTHCARE PRIVATE LIMITED", "KANUBADDHI CONSULTING PRIVATE LIMITED", "VINCETT INFRA", "DAICHI PROPTECH LLP",
+  "CHANGEX RESEARCH PRIVATE LIMITED", "Dragonfly Events", "SipraPro LLP", "Sree Ram Projects", "THRIVE TRM PRIVATE LIMITED",
+  "TRUESEARCH INDIA PRIVATE LIMITED", "IEKAA SOLUTION (OPC) PRIVATE LIMITED", "PCS Enterprises", "Siva Shakthi Developers",
+  "Dr.Swetha", "Dr.Vineela", "Sai Alaukik Hotels LLP", "Damacharla & Co", "USP Pethomes LLP", "ARVISH PROPERTIES LLP",
+  "Virat MEP Services", "Yaprr AI Technologies LLP", "Potiox World Private Limited"
+];
+
+function buildDefaultClients() {
+  return SEED_CLIENT_NAMES.map((name, idx) => {
+    const id = `CLI-${String(idx + 1).padStart(3, '0')}`;
+    let constitution = "Pvt Ltd";
+    if (name.includes("LLP")) constitution = "LLP";
+    else if (name.includes("(OPC)")) constitution = "OPC";
+    else if (name.startsWith("Dr.") || name === "Damacharla & Co" || name === "PCS Enterprises" || name === "Virat MEP Services") constitution = "Sole Proprietorship";
+    else if (name.includes("Projects") || name.includes("Events") || name.includes("INFRA") || name.includes("Developers")) constitution = "Partnership Firm";
+
+    return {
+      id: id,
+      name: name,
+      tradeName: name,
+      constitution: constitution,
+      pan: "AABCA1234E",
+      gstin: constitution === "Sole Proprietorship" ? "" : "36AABCA1234E1Z5",
+      contact: "Accounts Desk",
+      mobile: "9849012345",
+      email: "accounts@client.com",
+      category: "GST",
+      status: "Active",
+      address: "Hyderabad, Telangana"
+    };
+  });
+}
+
+const RAW_WORKS = [
+  { id:"WRK-26-0085", c:"SRI DURGA AMBIKA VENTURES PRIVATE LIMITED", cat:"MCA / Corporate", t:"Share Transfers", p:"NA", s:"Raghu Satish", d:"2026-10-10", pr:"Medium", st:"Pending Client Data", f:5000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0084", c:"AMA TECHNOSOLUTIONS PRIVATE LIMITED", cat:"MCA / Corporate", t:"Share Transfers", p:"NA", s:"Raghu Satish", d:"2026-10-10", pr:"Medium", st:"Pending Client Data", f:5000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0083", c:"Damacharla & Co", cat:"Income Tax", t:"TDS Payment", p:"September 2026", s:"Harsh Pradhan", d:"2026-10-07", pr:"High", st:"Not Started", f:2500, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0082", c:"IEKAA SOLUTION (OPC) PRIVATE LIMITED", cat:"Income Tax", t:"TDS Payment", p:"September 2026", s:"Harsh Pradhan", d:"2026-10-07", pr:"High", st:"Not Started", f:2500, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0081", c:"LYNXTECH INDIA PRIVATE LIMITED", cat:"EPFO", t:"Returns Filings", p:"May 2026 to September 2026", s:"Harsh Pradhan", d:"2026-10-15", pr:"Low", st:"Not Started", f:4000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0080", c:"LYNXTECH INDIA PRIVATE LIMITED", cat:"Professional Tax", t:"PT Filings", p:"May 2026 to September 2026", s:"Harsh Pradhan", d:"2026-10-10", pr:"Medium", st:"Not Started", f:3000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0079", c:"LYNXTECH INDIA PRIVATE LIMITED", cat:"Income Tax", t:"TDS Payment", p:"May 2026 to September 2026", s:"Harsh Pradhan", d:"2026-10-07", pr:"High", st:"Not Started", f:2500, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0078", c:"SIPRAHUB (OPC) PRIVATE LIMITED", cat:"Income Tax", t:"TDS Payment", p:"September 2026", s:"Raghu Satish", d:"2026-10-07", pr:"High", st:"Completed", f:2500, r:2500, bs:"Paid" },
+  { id:"WRK-26-0077", c:"TRINI HEALTHCARE PRIVATE LIMITED", cat:"Income Tax", t:"TDS Payment", p:"September 2026", s:"Harsh Pradhan", d:"2026-10-07", pr:"High", st:"Not Started", f:2500, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0076", c:"ALTICE LABS INDIA PRIVATE LIMITED", cat:"Income Tax", t:"TDS Payment", p:"September 2026", s:"Raghu Satish", d:"2026-10-07", pr:"High", st:"Not Started", f:2500, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0075", c:"TRINI HEALTHCARE PRIVATE LIMITED", cat:"MCA / Corporate", t:"Loan to Equity Conversion", p:"NA", s:"Harsh Pradhan", d:"2026-10-15", pr:"Low", st:"Not Started", f:10000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0074", c:"TRINI HEALTHCARE PRIVATE LIMITED", cat:"MCA / Corporate", t:"Increase of Authorised Share Capital", p:"NA", s:"Harsh Pradhan", d:"2026-10-15", pr:"Low", st:"Not Started", f:8000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0073", c:"GENZ INFOTECH PRIVATE LIMITED", cat:"GST", t:"GST Refund", p:"March 2026 to August 2026", s:"Harsh Pradhan", d:"2026-10-12", pr:"Medium", st:"Not Started", f:12000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0072", c:"SIPRAHUB (OPC) PRIVATE LIMITED", cat:"Administration", t:"Payslips Generation", p:"NA", s:"Sunil M", d:"2026-09-17", pr:"Critical", st:"Completed", f:2000, r:2000, bs:"Paid" },
+  { id:"WRK-26-0071", c:"BIT BYTE BUILD PRIVATE LIMITED", cat:"Accounting", t:"Monthly Bookkeeping", p:"FY 2025-26", s:"Sunil M", d:"2026-10-05", pr:"Critical", st:"Corrections Required", f:5000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0070", c:"SMART WAVES TECHNOLOGIES PRIVATE LIMITED", cat:"Accounting", t:"MIS Reports", p:"April 2026 to August 2026", s:"Sunil M", d:"2026-09-14", pr:"Critical", st:"Completed", f:7500, r:7500, bs:"Paid" },
+  { id:"WRK-26-0069", c:"KASA HEALTHCARE PRIVATE LIMITED", cat:"EPFO", t:"Member Additions", p:"NA", s:"Sunil M", d:"2026-10-06", pr:"Critical", st:"In Progress", f:2500, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0068", c:"TRADITIONAL OIL PROJECT INDIA PRIVATE LIMITED", cat:"Accounting", t:"Monthly Bookkeeping", p:"FY 2025-26", s:"Sunil M", d:"2026-10-06", pr:"Critical", st:"Corrections Required", f:5000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0067", c:"QATTS TECHNOLOGIES PRIVATE LIMITED", cat:"GST", t:"GST Reconciliation", p:"FY 2025-26", s:"Sunil M", d:"2026-10-03", pr:"Critical", st:"Completed", f:6000, r:6000, bs:"Paid" },
+  { id:"WRK-26-0066", c:"SOUTH WEST COLD TECH PRIVATE LIMITED", cat:"MCA / Corporate", t:"Company Incorporation", p:"NA", s:"CS Aakanksha", d:"2026-10-06", pr:"Critical", st:"Pending Client Data", f:15000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0065", c:"NETSUKE AI LLP", cat:"IEC/DGFT", t:"IEC Application", p:"NA", s:"Harsh Pradhan", d:"2026-10-01", pr:"Critical", st:"Completed", f:3500, r:3500, bs:"Paid" },
+  { id:"WRK-26-0064", c:"BHAVISHYA BUSINESS CORP PRIVATE LIMITED", cat:"GST", t:"GST Notice Reply", p:"FY 2023-24", s:"Raghu Satish", d:"2026-10-12", pr:"Medium", st:"Pending Client Data", f:8000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0063", c:"BHAVISHYA BUSINESS CORP PRIVATE LIMITED", cat:"GST", t:"GST Notice Reply", p:"FY 2022-23", s:"Raghu Satish", d:"2026-10-12", pr:"Medium", st:"Pending Client Data", f:8000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0062", c:"Yaprr AI Technologies LLP", cat:"MCA / Corporate", t:"Company Incorporation", p:"NA", s:"CS Aakanksha", d:"2026-10-06", pr:"Critical", st:"Pending Client Data", f:15000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0061", c:"Virat MEP Services", cat:"GST", t:"GST Registration", p:"NA", s:"Harsh Pradhan", d:"2026-09-30", pr:"Critical", st:"Filed", f:3500, r:3500, bs:"Paid" },
+  { id:"WRK-26-0060", c:"ALTICE LABS INDIA PRIVATE LIMITED", cat:"GST", t:"GST Reconciliation", p:"FY 2025-26", s:"Sunil M", d:"2026-09-30", pr:"Critical", st:"Completed", f:6000, r:6000, bs:"Paid" },
+  { id:"WRK-26-0059", c:"ARVISH PROPERTIES LLP", cat:"MCA / Corporate", t:"Company Incorporation", p:"NA", s:"CS Aakanksha", d:"2026-10-06", pr:"Critical", st:"Pending Client Data", f:15000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0058", c:"USP Pethomes LLP", cat:"MCA / Corporate", t:"Company Incorporation", p:"NA", s:"CS Aakanksha", d:"2026-10-06", pr:"Critical", st:"Pending Client Data", f:15000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0057", c:"DAICHI PROPTECH LLP", cat:"MCA / Corporate", t:"Company Incorporation", p:"NA", s:"CS Aakanksha", d:"2026-10-06", pr:"Critical", st:"Pending Client Data", f:15000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0056", c:"Dr.Vineela", cat:"Income Tax", t:"Tax Audit (Form 3CD)", p:"FY 2025-26", s:"Raghu Satish", d:"2026-10-21", pr:"Low", st:"Ready for Filing", f:15000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0055", c:"Dr.Swetha", cat:"Income Tax", t:"Tax Audit (Form 3CD)", p:"FY 2025-26", s:"Raghu Satish", d:"2026-10-21", pr:"Low", st:"Ready for Filing", f:15000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0054", c:"Damacharla & Co", cat:"Income Tax", t:"Tax Audit (Form 3CD)", p:"FY 2025-26", s:"Raghu Satish", d:"2026-10-21", pr:"Low", st:"Pending Client Data", f:15000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0053", c:"Sai Alaukik Hotels LLP", cat:"Income Tax", t:"Tax Audit (Form 3CD)", p:"FY 2025-26", s:"Harsh Pradhan", d:"2026-10-21", pr:"Low", st:"In Progress", f:15000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0052", c:"Siva Shakthi Developers", cat:"Income Tax", t:"Tax Audit (Form 3CD)", p:"FY 2025-26", s:"Raghu Satish", d:"2026-10-21", pr:"Low", st:"Ready for Filing", f:15000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0051", c:"PCS Enterprises", cat:"Income Tax", t:"Tax Audit (Form 3CD)", p:"FY 2025-26", s:"Raghu Satish", d:"2026-10-21", pr:"Low", st:"Not Started", f:15000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0050", c:"SIPRAHUB (OPC) PRIVATE LIMITED", cat:"Income Tax", t:"Tax Audit (Form 3CD)", p:"FY 2025-26", s:"Raghu Satish", d:"2026-10-21", pr:"Low", st:"Ready for Filing", f:15000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0049", c:"IBASE INDIA SOFTWARE SOLUTIONS PRIVATE LIMITED", cat:"Income Tax", t:"Tax Audit (Form 3CD)", p:"FY 2025-26", s:"Raghu Satish", d:"2026-10-21", pr:"Low", st:"In Progress", f:15000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0048", c:"IEKAA SOLUTION (OPC) PRIVATE LIMITED", cat:"MCA / Corporate", t:"AOC-4", p:"FY 2025-26", s:"Raghu Satish", d:"2026-09-27", pr:"Critical", st:"Not Started", f:6000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0047", c:"RAMACHANDRA RAO YERNENI (OPC) PRIVATE LIMITED", cat:"MCA / Corporate", t:"AOC-4", p:"FY 2025-26", s:"Raghu Satish", d:"2026-09-27", pr:"Critical", st:"Not Started", f:6000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0046", c:"SIPRAHUB (OPC) PRIVATE LIMITED", cat:"MCA / Corporate", t:"AOC-4", p:"FY 2025-26", s:"Raghu Satish", d:"2026-09-27", pr:"Critical", st:"In Progress", f:6000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0045", c:"IBASE INDIA SOFTWARE SOLUTIONS PRIVATE LIMITED", cat:"GST", t:"GST Registration", p:"NA", s:"Harsh Pradhan", d:"2026-10-06", pr:"Critical", st:"Filed", f:3500, r:3500, bs:"Paid" },
+  { id:"WRK-26-0044", c:"RAMACHANDRA RAO YERNENI (OPC) PRIVATE LIMITED", cat:"MCA / Corporate", t:"Appointment of Director", p:"NA", s:"CS Aakanksha", d:"2026-10-06", pr:"Critical", st:"Not Started", f:4500, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0043", c:"QATTS TECHNOLOGIES PRIVATE LIMITED", cat:"MCA / Corporate", t:"Appointment of Director", p:"NA", s:"CS Aakanksha", d:"2026-10-06", pr:"Critical", st:"Not Started", f:4500, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0042", c:"IBASE SOFTWARE RAM INDIA PRIVATE LIMITED", cat:"MCA / Corporate", t:"Appointment of Director", p:"NA", s:"CS Aakanksha", d:"2026-10-06", pr:"Critical", st:"Not Started", f:4500, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0041", c:"IBASE INDIA SOFTWARE SOLUTIONS PRIVATE LIMITED", cat:"MCA / Corporate", t:"Appointment of Director", p:"NA", s:"CS Aakanksha", d:"2026-10-06", pr:"Critical", st:"Not Started", f:4500, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0040", c:"BLOOMY DESIGNS AND FASHIONS PRIVATE LIMITED", cat:"MCA / Corporate", t:"Appointment of Director", p:"NA", s:"CS Aakanksha", d:"2026-10-06", pr:"Critical", st:"Not Started", f:4500, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0039", c:"IBASE INDIA SOFTWARE SOLUTIONS PRIVATE LIMITED", cat:"MCA / Corporate", t:"DIN Allotment", p:"NA", s:"CS Aakanksha", d:"2026-10-06", pr:"Critical", st:"Not Started", f:3000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0038", c:"TRUESEARCH INDIA PRIVATE LIMITED", cat:"MCA / Corporate", t:"Company Incorporation", p:"NA", s:"Raghu Satish", d:"2026-10-05", pr:"Critical", st:"Filed", f:15000, r:15000, bs:"Paid" },
+  { id:"WRK-26-0037", c:"THRIVE TRM PRIVATE LIMITED", cat:"MCA / Corporate", t:"ADT-1", p:"NA", s:"CS Aakanksha", d:"2026-10-11", pr:"Medium", st:"Not Started", f:3500, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0036", c:"THRIVE TRM PRIVATE LIMITED", cat:"MCA / Corporate", t:"INC-22", p:"NA", s:"CS Aakanksha", d:"2026-10-11", pr:"Medium", st:"Not Started", f:3500, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0035", c:"THRIVE TRM PRIVATE LIMITED", cat:"MCA / Corporate", t:"INC-20A", p:"NA", s:"CS Aakanksha", d:"2027-03-11", pr:"Low", st:"Not Started", f:4000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0034", c:"Sree Ram Projects", cat:"Professional Tax", t:"Departmental Work", p:"NA", s:"Sunil M", d:"2026-10-06", pr:"Critical", st:"Not Started", f:5000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0033", c:"ALERTFUSION PRIVATE LIMITED", cat:"MCA / Corporate", t:"Company Closure Filings", p:"NA", s:"Raghu Satish", d:"2026-10-06", pr:"Critical", st:"On Hold", f:12000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0032", c:"SOCVIEW SOLUTIONS PRIVATE LIMITED", cat:"MCA / Corporate", t:"Preparation of Resolutions", p:"NA", s:"Raghu Satish", d:"2026-10-06", pr:"Critical", st:"Not Started", f:4000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0031", c:"SOCVIEW SOLUTIONS PRIVATE LIMITED", cat:"MCA / Corporate", t:"Company Closure Filings", p:"NA", s:"Raghu Satish", d:"2026-10-06", pr:"Critical", st:"Not Started", f:12000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0030", c:"SipraGrow LLP", cat:"Income Tax", t:"Corrections filing in PAN and TAN database", p:"NA", s:"Harsh Pradhan", d:"2026-10-06", pr:"Critical", st:"Not Started", f:2500, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0029", c:"SipraPro LLP", cat:"GST", t:"GST Registration", p:"NA", s:"Harsh Pradhan", d:"2026-10-06", pr:"Critical", st:"Filed", f:3500, r:3500, bs:"Paid" },
+  { id:"WRK-26-0028", c:"SipraGrow LLP", cat:"GST", t:"GST Registration", p:"NA", s:"Harsh Pradhan", d:"2026-10-06", pr:"Critical", st:"Filed", f:3500, r:3500, bs:"Paid" },
+  { id:"WRK-26-0027", c:"SipraPro LLP", cat:"Income Tax", t:"Corrections filing in PAN and TAN database", p:"NA", s:"Harsh Pradhan", d:"2026-10-06", pr:"Critical", st:"Not Started", f:2500, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0026", c:"SipraPro LLP", cat:"MCA / Corporate", t:"LLP Form 15", p:"NA", s:"Harsh Pradhan", d:"2026-10-06", pr:"Critical", st:"Not Started", f:3500, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0025", c:"SipraPro LLP", cat:"MCA / Corporate", t:"LLP Form 3", p:"NA", s:"Harsh Pradhan", d:"2026-10-06", pr:"Critical", st:"Not Started", f:3500, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0024", c:"SipraGrow LLP", cat:"Income Tax", t:"Corrections filing in PAN and TAN database", p:"NA", s:"Harsh Pradhan", d:"2026-10-06", pr:"Critical", st:"Not Started", f:2500, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0023", c:"SipraGrow LLP", cat:"MCA / Corporate", t:"LLP Form 15", p:"NA", s:"Harsh Pradhan", d:"2026-10-06", pr:"Critical", st:"Not Started", f:3500, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0022", c:"SipraGrow LLP", cat:"MCA / Corporate", t:"LLP Form 3", p:"NA", s:"Harsh Pradhan", d:"2026-10-06", pr:"Critical", st:"Not Started", f:3500, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0021", c:"CHANGEX RESEARCH PRIVATE LIMITED", cat:"MCA / Corporate", t:"ADT-1", p:"NA", s:"Harsh Pradhan", d:"2026-10-06", pr:"Critical", st:"Not Started", f:3500, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0020", c:"CHANGEX RESEARCH PRIVATE LIMITED", cat:"MCA / Corporate", t:"ADT-3", p:"NA", s:"Raghu Satish", d:"2026-10-06", pr:"Critical", st:"Not Started", f:3500, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0019", c:"CHANGEX RESEARCH PRIVATE LIMITED", cat:"MCA / Corporate", t:"ADT-1", p:"FY 2025-26", s:"Raghu Satish", d:"2026-10-06", pr:"Critical", st:"Not Started", f:3500, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0018", c:"BHAVISHYA BUSINESS CORP PRIVATE LIMITED", cat:"Income Tax", t:"TDS Return", p:"4 Quarters", s:"Harsh Pradhan", d:"2026-10-06", pr:"Critical", st:"Not Started", f:8000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0017", c:"BHAVISHYA BUSINESS CORP PRIVATE LIMITED", cat:"Certifications", t:"Book Debts Certificate", p:"As on 31.03.2026", s:"Raghu Satish", d:"2026-10-06", pr:"Critical", st:"Not Started", f:5000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0016", c:"BHAVISHYA BUSINESS CORP PRIVATE LIMITED", cat:"MCA / Corporate", t:"ADT-1", p:"NA", s:"Raghu Satish", d:"2026-10-14", pr:"Low", st:"Not Started", f:3500, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0015", c:"BHAVISHYA BUSINESS CORP PRIVATE LIMITED", cat:"Accounting", t:"Finalisation & Balance Sheet", p:"FY 2025-26", s:"Raghu Satish", d:"2026-10-06", pr:"Critical", st:"In Progress", f:12000, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0014", c:"Dragonfly Events", cat:"Administration", t:"Invoice Preparation", p:"NA", s:"Harsh Pradhan", d:"2026-09-29", pr:"Critical", st:"Completed", f:2500, r:2500, bs:"Paid" },
+  { id:"WRK-26-0013", c:"CHANGEX RESEARCH PRIVATE LIMITED", cat:"MCA / Corporate", t:"MGT-14", p:"NA", s:"Raghu Satish", d:"2026-08-24", pr:"Critical", st:"Completed", f:4500, r:4500, bs:"Paid" },
+  { id:"WRK-26-0012", c:"CHANGEX RESEARCH PRIVATE LIMITED", cat:"MCA / Corporate", t:"PAS-3", p:"NA", s:"Raghu Satish", d:"2026-09-02", pr:"Critical", st:"Completed", f:5000, r:5000, bs:"Paid" },
+  { id:"WRK-26-0011", c:"CHANGEX RESEARCH PRIVATE LIMITED", cat:"MCA / Corporate", t:"PAS-3", p:"NA", s:"Raghu Satish", d:"2026-08-24", pr:"Critical", st:"Completed", f:5000, r:5000, bs:"Paid" },
+  { id:"WRK-26-0010", c:"KALPIN ELECTRONIX PRIVATE LIMITED", cat:"MCA / Corporate", t:"Charge Creation", p:"NA", s:"Raghu Satish", d:"2026-10-06", pr:"Critical", st:"Pending Client Data", f:6500, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0009", c:"CORPUS ENTERPRISES PRIVATE LIMITED", cat:"MCA / Corporate", t:"Charge Creation", p:"NA", s:"Raghu Satish", d:"2026-10-06", pr:"Critical", st:"Pending Client Data", f:6500, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0008", c:"SRI DURGA AMBIKA VENTURES PRIVATE LIMITED", cat:"MCA / Corporate", t:"Issue of Share Certificates", p:"NA", s:"Raghu Satish", d:"2026-09-15", pr:"Critical", st:"Completed", f:3500, r:3500, bs:"Paid" },
+  { id:"WRK-26-0007", c:"TRINI HEALTHCARE PRIVATE LIMITED", cat:"Audit", t:"Statutory Audit", p:"FY 2025-26", s:"Harsh Pradhan", d:"2026-09-30", pr:"Critical", st:"Completed", f:25000, r:25000, bs:"Paid" },
+  { id:"WRK-26-0006", c:"SMART WAVES TECHNOLOGIES PRIVATE LIMITED", cat:"Administration", t:"General", p:"NA", s:"Sunil M", d:"2026-10-08", pr:"High", st:"Not Started", f:2500, r:0, bs:"Not Billed" },
+  { id:"WRK-26-0005", c:"CORPUS ENTERPRISES PRIVATE LIMITED", cat:"Administration", t:"Client Support", p:"NA", s:"Harsh Pradhan", d:"2026-08-13", pr:"Critical", st:"Completed", f:2000, r:2000, bs:"Paid" },
+  { id:"WRK-26-0004", c:"BHAVISHYA BUSINESS CORP PRIVATE LIMITED", cat:"Income Tax", t:"TDS Return", p:"FY 2025-26 Q4 24Q Filing", s:"Harsh Pradhan", d:"2026-08-18", pr:"Critical", st:"Completed", f:3000, r:3000, bs:"Paid" },
+  { id:"WRK-26-0003", c:"VINCETT INFRA", cat:"GST", t:"GST Registration", p:"Telangana GST Registration", s:"Harsh Pradhan", d:"2026-08-17", pr:"Critical", st:"Completed", f:3500, r:3500, bs:"Paid" },
+  { id:"WRK-26-0002", c:"TRINI HEALTHCARE PRIVATE LIMITED", cat:"Income Tax", t:"TDS Return", p:"FY 2025-26 Q4 26Q Correction", s:"Harsh Pradhan", d:"2026-08-18", pr:"Low", st:"Completed", f:3000, r:3000, bs:"Paid" },
+  { id:"WRK-26-0001", c:"CORPUS ENTERPRISES PRIVATE LIMITED", cat:"Income Tax", t:"TDS Return", p:"FY 2025-26", s:"Harsh Pradhan", d:"2026-08-18", pr:"Low", st:"Completed", f:3000, r:3000, bs:"Paid" }
+];
+
+function buildDefaultWorks(clientList) {
+  return RAW_WORKS.map(item => {
+    const cObj = clientList.find(cl => cl.name === item.c);
+    return {
+      id: item.id,
+      clientId: cObj ? cObj.id : "CLI-001",
+      clientName: item.c,
+      fy: "2025-26",
+      category: item.cat,
+      type: item.t,
+      period: item.p,
+      staff: item.s,
+      reviewer: "CA Venkata Sai Damacharla",
+      dueDate: item.d,
+      priority: item.pr,
+      status: item.st,
+      fee: item.f,
+      invoiceNo: item.bs === "Paid" ? `DAC/25-26/${item.id.split('-')[2]}` : "",
+      received: item.r,
+      billingStatus: item.bs,
+      remarks: "",
+      notes: []
+    };
+  });
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  // 1. Instantly populate the tables from local defaults so nothing is ever blank
+  loadLocalCache();
+  populateDropdowns();
+  renderAllViews();
+  applyLockSecurityUI();
+  
+  // 2. Perform background cloud sync without blocking user interaction
+  setTimeout(() => {
+    syncFromCloud();
+  }, 300);
+
+  setInterval(syncFromCloud, 60000);
+});
+
+function updateSyncStatus(msg, isSuccess = true) {
+  const el = document.getElementById('sync-status-indicator');
+  if (el) {
+    el.innerText = msg;
+    el.style.color = isSuccess ? '#166534' : '#991b1b';
+    el.style.background = isSuccess ? '#dcfce7' : '#fee2e2';
+  }
+}
+
+/* ================= CLOUD SYNC ENGINE ================= */
+async function syncFromCloud() {
+  updateSyncStatus("🔄 Syncing...");
+  try {
+    const res = await fetch(GOOGLE_APPS_SCRIPT_URL, { redirect: "follow" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const cloud = await res.json();
+    
+    // Auto-seed if database sheet is empty
+    if (!cloud || Object.keys(cloud).length === 0 || (!cloud.clients && !cloud.works)) {
+      updateSyncStatus("🚀 Seeding Cloud...");
+      await seedCloudDatabase();
+      return;
+    }
+
+    if (cloud.works && Array.isArray(cloud.works) && cloud.works.length > 0) {
+      works = cloud.works;
+      localStorage.setItem(STORAGE_KEYS.WORKS, JSON.stringify(works));
+    }
+    if (cloud.clients && Array.isArray(cloud.clients) && cloud.clients.length > 0) {
+      clients = cloud.clients;
+      localStorage.setItem(STORAGE_KEYS.CLIENTS, JSON.stringify(clients));
+    }
+    if (cloud.staff && Array.isArray(cloud.staff) && cloud.staff.length > 0) {
+      staff = cloud.staff;
+      localStorage.setItem(STORAGE_KEYS.STAFF, JSON.stringify(staff));
+    }
+    if (cloud.settings && typeof cloud.settings === 'object') {
+      settings = cloud.settings;
+      localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+    }
+    if (cloud.fyList && Array.isArray(cloud.fyList) && cloud.fyList.length > 0) {
+      fyList = cloud.fyList;
+      localStorage.setItem(STORAGE_KEYS.FY_LIST, JSON.stringify(fyList));
+    }
+
+    populateDropdowns();
+    applyFirmSettingsToUI();
+    renderAllViews();
+    updateSyncStatus("☁️ Synced", true);
+  } catch (err) {
+    console.warn("Cloud sync unavailable, using local copy:", err);
+    updateSyncStatus("⚠️ Offline (Local)", false);
+  }
+}
+
+function saveToCloud(key, value) {
+  updateSyncStatus("⏳ Uploading...");
+  try {
+    fetch(GOOGLE_APPS_SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ key: key, value: value })
+    }).then(() => {
+      updateSyncStatus("☁️ Synced", true);
+    }).catch((err) => {
+      console.warn("Cloud push warning:", err);
+      updateSyncStatus("⚠️ Sync Warning", false);
+    });
+  } catch (err) {
+    console.error("Cloud push failed:", err);
+    updateSyncStatus("⚠️ Sync Failed", false);
+  }
+}
+
+async function seedCloudDatabase() {
+  saveToCloud('settings', settings);
+  saveToCloud('fyList', fyList);
+  saveToCloud('taxonomy', taxonomy);
+  saveToCloud('staff', staff);
+  saveToCloud('clients', clients);
+  saveToCloud('works', works);
+  updateSyncStatus("☁️ Synced", true);
+}
+
+function loadLocalCache() {
+  settings = JSON.parse(localStorage.getItem(STORAGE_KEYS.SETTINGS)) || DEFAULT_SETTINGS;
+  fyList = JSON.parse(localStorage.getItem(STORAGE_KEYS.FY_LIST)) || DEFAULT_FY;
+  taxonomy = JSON.parse(localStorage.getItem(STORAGE_KEYS.TAXONOMY)) || DEFAULT_TAXONOMY;
+  staff = JSON.parse(localStorage.getItem(STORAGE_KEYS.STAFF)) || SAMPLE_STAFF;
+  
+  const cachedClients = JSON.parse(localStorage.getItem(STORAGE_KEYS.CLIENTS));
+  clients = (cachedClients && Array.isArray(cachedClients) && cachedClients.length > 0) ? cachedClients : buildDefaultClients();
+
+  const cachedWorks = JSON.parse(localStorage.getItem(STORAGE_KEYS.WORKS));
+  works = (cachedWorks && Array.isArray(cachedWorks) && cachedWorks.length > 0) ? cachedWorks : buildDefaultWorks(clients);
+
+  applyFirmSettingsToUI();
+}
+
+function saveData(key) {
+  if (key === 'settings') { localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings)); saveToCloud('settings', settings); }
+  if (key === 'clients') { localStorage.setItem(STORAGE_KEYS.CLIENTS, JSON.stringify(clients)); saveToCloud('clients', clients); }
+  if (key === 'works') { localStorage.setItem(STORAGE_KEYS.WORKS, JSON.stringify(works)); saveToCloud('works', works); }
+  if (key === 'staff') { localStorage.setItem(STORAGE_KEYS.STAFF, JSON.stringify(staff)); saveToCloud('staff', staff); }
+  if (key === 'taxonomy') { localStorage.setItem(STORAGE_KEYS.TAXONOMY, JSON.stringify(taxonomy)); saveToCloud('taxonomy', taxonomy); }
+  if (key === 'fy') { localStorage.setItem(STORAGE_KEYS.FY_LIST, JSON.stringify(fyList)); saveToCloud('fyList', fyList); }
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function applyFirmSettingsToUI() {
+  document.getElementById('sidebar-firm-name').innerText = settings.firmName || "DAMACHARLA & CO.";
+  document.getElementById('print-firm-title').innerText = settings.firmName || "DAMACHARLA & CO.";
+  document.getElementById('setting-firm-name').value = settings.firmName || "";
+  document.getElementById('setting-firm-gstin').value = settings.firmGstin || "";
+  document.getElementById('setting-firm-phone').value = settings.firmPhone || "";
+  document.getElementById('setting-firm-addr').value = settings.firmAddress || "";
+
+  const logoContainer = document.getElementById('brand-logo-container');
+  if (settings.logoBase64) {
+    logoContainer.innerHTML = `<img src="${settings.logoBase64}" class="brand-logo-img" alt="Logo">`;
+  } else {
+    const initials = (settings.firmName || "DA").substring(0, 2).toUpperCase();
+    logoContainer.innerHTML = `<div class="brand-avatar">${initials}</div>`;
+  }
+}
+
+/* NAVIGATION & LOCK CONTROLS */
+function switchNav(panelKey) {
+  if ((panelKey === 'billing' || panelKey === 'collections') && !isAdminUnlocked) {
+    requestAdminAuth(() => {
+      actuallySwitchNav(panelKey);
+    });
+    return;
+  }
+  actuallySwitchNav(panelKey);
+}
+
+function actuallySwitchNav(panelKey) {
+  document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  const target = document.getElementById(`panel-${panelKey}`);
+  if (target) target.classList.add('active');
+
+  const navs = Array.from(document.querySelectorAll('.nav-item'));
+  const found = navs.find(n => n.getAttribute('onclick')?.includes(`'${panelKey}'`));
+  if (found) found.classList.add('active');
+
+  if (panelKey === 'calendar') renderCalendar();
+  if (panelKey === 'reminders') renderRemindersHub();
+  if (panelKey === 'reports') loadReportType('pending');
+}
+
+function toggleAdminLock() {
+  if (isAdminUnlocked) {
+    isAdminUnlocked = false;
+    applyLockSecurityUI();
+  } else {
+    requestAdminAuth(() => {
+      isAdminUnlocked = true;
+      applyLockSecurityUI();
+    });
+  }
+}
+
+function applyLockSecurityUI() {
+  const btn = document.getElementById('btn-admin-lock');
+  const icon = document.getElementById('lock-icon');
+  const txt = document.getElementById('lock-text');
+
+  if (isAdminUnlocked) {
+    btn.className = "btn-lock unlocked";
+    icon.innerText = "🔓";
+    txt.innerText = "Billing Unlocked";
+    document.querySelectorAll('.locked-sensitive').forEach(el => {
+      el.classList.remove('is-locked');
+      el.style.filter = "none";
+    });
+  } else {
+    btn.className = "btn-lock locked";
+    icon.innerText = "🔒";
+    txt.innerText = "Billing Locked";
+    document.querySelectorAll('.locked-sensitive').forEach(el => {
+      el.classList.add('is-locked');
+      el.style.filter = "blur(5px)";
+    });
+  }
+  renderDashboard();
+  renderWorkTable();
+  renderBillingTable();
+  renderAgeingTable();
+}
+
+function requestAdminAuth(callback) {
+  pendingAuthCallback = callback;
+  document.getElementById('auth-input-pin').value = '';
+  document.getElementById('auth-error-msg').innerText = '';
+  document.getElementById('modal-auth').classList.add('show');
+  setTimeout(() => document.getElementById('auth-input-pin').focus(), 100);
+}
+
+function verifyAdminPin() {
+  const entered = document.getElementById('auth-input-pin').value;
+  const currentPin = settings.adminPin || "ca1234";
+
+  if (entered === currentPin) {
+    closeModal('modal-auth');
+    isAdminUnlocked = true;
+    applyLockSecurityUI();
+    if (typeof pendingAuthCallback === 'function') {
+      const cb = pendingAuthCallback;
+      pendingAuthCallback = null;
+      cb();
+    }
+  } else {
+    document.getElementById('auth-error-msg').innerText = "Incorrect Password / PIN";
+  }
+}
+
+/* POPULATE DROPDOWNS */
+function populateDropdowns() {
+  const fyHtml = fyList.map(f => `<option value="${f}">${f}</option>`).join('');
+  document.getElementById('w-fy').innerHTML = fyHtml;
+  document.getElementById('fy-filter').innerHTML = `<option value="ALL">All FY</option>` + fyHtml;
+
+  const clientOptions = clients.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+  document.getElementById('w-client').innerHTML = clientOptions;
+  document.getElementById('filter-work-client').innerHTML = `<option value="ALL">All Clients</option>` + clientOptions;
+
+  const staffOptions = staff.map(s => `<option value="${s.name}">${escapeHtml(s.name)} (${s.designation})</option>`).join('');
+  document.getElementById('w-staff').innerHTML = staffOptions;
+  document.getElementById('w-reviewer').innerHTML = `<option value="">None</option>` + staffOptions;
+  document.getElementById('filter-work-staff').innerHTML = `<option value="ALL">All Staff</option>` + staffOptions;
+  document.getElementById('comm-staff-select').innerHTML = staffOptions;
+
+  const cats = Object.keys(taxonomy);
+  document.getElementById('w-category').innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('');
+  onCategoryChange();
+}
+
+function onCategoryChange() {
+  const cat = document.getElementById('w-category').value;
+  const types = taxonomy[cat] || [];
+  document.getElementById('w-type').innerHTML = types.map(t => `<option value="${t}">${t}</option>`).join('');
+}
+
+function promptAddFY() {
+  const newFY = prompt("Enter new Financial Year (e.g. 2028-29):");
+  if (newFY && newFY.trim()) {
+    const trimmed = newFY.trim();
+    if (!fyList.includes(trimmed)) {
+      fyList.push(trimmed);
+      saveData('fy');
+      populateDropdowns();
+      alert(`Financial Year ${trimmed} added!`);
+    }
+  }
+}
+
+function promptAddCategory() {
+  const cat = prompt("Enter new Work Category / Discipline:");
+  if (cat && cat.trim()) {
+    const trimmed = cat.trim();
+    if (!taxonomy[trimmed]) {
+      taxonomy[trimmed] = ["General"];
+      saveData('taxonomy');
+      populateDropdowns();
+      document.getElementById('w-category').value = trimmed;
+      onCategoryChange();
+    }
+  }
+}
+
+function promptAddType() {
+  const cat = document.getElementById('w-category').value;
+  const t = prompt(`Enter new Work Type under ${cat}:`);
+  if (t && t.trim()) {
+    const trimmed = t.trim();
+    if (!taxonomy[cat]) taxonomy[cat] = [];
+    if (!taxonomy[cat].includes(trimmed)) {
+      taxonomy[cat].push(trimmed);
+      saveData('taxonomy');
+      onCategoryChange();
+      document.getElementById('w-type').value = trimmed;
+    }
+  }
+}
+
+/* DATE & AGEING UTILS */
+function getTodayDateStr() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function calculateAgeing(dueDateStr, status) {
+  if (['Completed', 'Filed', 'Cancelled'].includes(status)) {
+    return { label: "Done", badge: "badge-success", days: 0, isOverdue: false };
+  }
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const due = new Date(dueDateStr);
+  due.setHours(0,0,0,0);
+
+  const diffTime = due.getTime() - today.getTime();
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) {
+    const overdue = Math.abs(diffDays);
+    return { label: `Overdue by ${overdue}d`, badge: "badge-danger", days: overdue, isOverdue: true };
+  } else if (diffDays === 0) {
+    return { label: "Due Today", badge: "badge-warning", days: 0, isOverdue: false, isToday: true };
+  } else if (diffDays === 1) {
+    return { label: "Due Tomorrow", badge: "badge-warning", days: 1, isOverdue: false };
+  } else {
+    return { label: `Due in ${diffDays}d`, badge: "badge-primary", days: diffDays, isOverdue: false };
+  }
+}
+
+function autoSuggestPriority() {
+  const dueVal = document.getElementById('w-due-date').value;
+  if (!dueVal) return;
+  const ageing = calculateAgeing(dueVal, 'In Progress');
+  const sel = document.getElementById('w-priority');
+  if (ageing.isOverdue || ageing.isToday) {
+    sel.value = "Critical";
+  } else if (ageing.days <= 2) {
+    sel.value = "High";
+  } else if (ageing.days <= 7) {
+    sel.value = "Medium";
+  } else {
+    sel.value = "Low";
+  }
+}
+
+/* 1. DASHBOARD */
+function renderDashboard() {
+  const fyFilter = document.getElementById('fy-filter').value;
+  const filteredWorks = works.filter(w => fyFilter === 'ALL' || w.fy === fyFilter);
+
+  const active = filteredWorks.filter(w => !['Completed', 'Filed', 'Cancelled'].includes(w.status));
+  const overdue = active.filter(w => calculateAgeing(w.dueDate, w.status).isOverdue);
+  const dueToday = active.filter(w => calculateAgeing(w.dueDate, w.status).isToday);
+  const dueSoon = active.filter(w => {
+    const ag = calculateAgeing(w.dueDate, w.status);
+    return !ag.isOverdue && ag.days <= 3;
+  });
+  const unbilled = filteredWorks.filter(w => ['Completed', 'Filed'].includes(w.status) && (w.billingStatus === 'Not Billed' || !w.billingStatus));
+
+  document.getElementById('kpi-active-works').innerText = active.length;
+  document.getElementById('kpi-pending-works').innerText = active.length;
+  document.getElementById('kpi-overdue-works').innerText = overdue.length;
+  document.getElementById('badge-overdue').innerText = overdue.length;
+  document.getElementById('kpi-due-soon').innerText = dueSoon.length;
+  document.getElementById('kpi-due-today').innerText = dueToday.length;
+  document.getElementById('kpi-unbilled-works').innerText = unbilled.length;
+
+  let unbilledEst = unbilled.reduce((sum, w) => sum + (Number(w.fee) || 0), 0);
+  let totalBilled = 0;
+  let totalCollected = 0;
+  filteredWorks.forEach(w => {
+    if (w.fee) totalBilled += Number(w.fee);
+    if (w.received) totalCollected += Number(w.received);
+  });
+  let totalOutstanding = totalBilled - totalCollected;
+
+  if (isAdminUnlocked) {
+    document.getElementById('kpi-unbilled-amt').innerText = `Est. ₹${unbilledEst.toLocaleString('en-IN')} unbilled`;
+    document.getElementById('kpi-billed-amt').innerText = `₹${totalBilled.toLocaleString('en-IN')}`;
+    document.getElementById('kpi-collected-amt').innerText = `₹${totalCollected.toLocaleString('en-IN')}`;
+    document.getElementById('kpi-outstanding-amt').innerText = `₹${totalOutstanding.toLocaleString('en-IN')}`;
+    document.getElementById('kpi-overdue-receivables').innerText = `₹0 Overdue (>30 Days)`;
+  } else {
+    document.getElementById('kpi-unbilled-amt').innerText = `Est. ₹•••••• unbilled`;
+    document.getElementById('kpi-billed-amt').innerText = `₹••••••`;
+    document.getElementById('kpi-collected-amt').innerText = `₹••••••`;
+    document.getElementById('kpi-outstanding-amt').innerText = `₹••••••`;
+    document.getElementById('kpi-overdue-receivables').innerText = `₹•••••• Overdue`;
+  }
+
+  document.getElementById('kpi-active-clients').innerText = clients.filter(c => c.status === 'Active').length;
+  const activeClientIdsWithWork = new Set(active.map(w => w.clientId));
+  document.getElementById('kpi-clients-pending').innerText = activeClientIdsWithWork.size;
+
+  const bannerEl = document.getElementById('dash-deadline-alert-text');
+  if (overdue.length > 0 || dueToday.length > 0) {
+    bannerEl.innerText = `You have ${overdue.length} overdue tasks and ${dueToday.length} tasks due today requiring immediate compliance filing!`;
+  } else {
+    bannerEl.innerText = `All statutory returns and compliance milestones are healthy and on schedule.`;
+  }
+
+  const priorityWorks = [...active].sort((a,b) => new Date(a.dueDate) - new Date(b.dueDate)).slice(0, 7);
+  const tbody = document.getElementById('dash-priority-table');
+  if (priorityWorks.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:16px; color:#64748b;">No urgent assignments pending!</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = priorityWorks.map(w => {
+    const ag = calculateAgeing(w.dueDate, w.status);
+    const pBadge = w.priority === 'Critical' ? 'badge-danger' : (w.priority === 'High' ? 'badge-warning' : 'badge-primary');
+    return `
+      <tr>
+        <td><strong>${w.id}</strong></td>
+        <td><strong>${escapeHtml(w.clientName)}</strong></td>
+        <td>${escapeHtml(w.type)}</td>
+        <td>${escapeHtml(w.period)}</td>
+        <td>${escapeHtml(w.staff)}</td>
+        <td>${w.dueDate}</td>
+        <td><span class="badge ${ag.badge}">${ag.label}</span></td>
+        <td><span class="badge ${pBadge}">${w.priority}</span></td>
+        <td>
+          <div style="display:flex; gap:4px;">
+            <button class="btn-wa" onclick="sendClientReminderWA('${w.id}')">📱 WA</button>
+            <button class="btn-mail" onclick="sendClientReminderMail('${w.id}')">✉️ Mail</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+/* 2. WORK TRACKER */
+function renderWorkTable() {
+  const fyFilter = document.getElementById('fy-filter').value;
+  const clientFilter = document.getElementById('filter-work-client').value;
+  const staffFilter = document.getElementById('filter-work-staff').value;
+  const statusFilter = document.getElementById('filter-work-status').value;
+  const priorityFilter = document.getElementById('filter-work-priority').value;
+  const unbilledFilter = document.getElementById('filter-work-unbilled').value;
+
+  const filtered = works.filter(w => {
+    if (fyFilter !== 'ALL' && w.fy !== fyFilter) return false;
+    if (clientFilter !== 'ALL' && w.clientId !== clientFilter) return false;
+    if (staffFilter !== 'ALL' && w.staff !== staffFilter) return false;
+    if (priorityFilter !== 'ALL' && w.priority !== priorityFilter) return false;
+
+    if (statusFilter === 'Pending' && ['Completed', 'Filed', 'Cancelled'].includes(w.status)) return false;
+    if (statusFilter === 'Completed' && !['Completed', 'Filed'].includes(w.status)) return false;
+    if (statusFilter === 'Overdue') {
+      const ag = calculateAgeing(w.dueDate, w.status);
+      if (!ag.isOverdue) return false;
+    }
+
+    if (unbilledFilter === 'UNBILLED' && (!['Completed', 'Filed'].includes(w.status) || w.billingStatus === 'Billed' || w.billingStatus === 'Paid')) return false;
+    if (unbilledFilter === 'BILLED' && w.billingStatus !== 'Billed' && w.billingStatus !== 'Paid') return false;
+
+    return true;
+  });
+
+  const tbody = document.getElementById('work-table-body');
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="12" style="text-align:center; padding:18px; color:var(--text-muted)">No matching assignments found.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(w => {
+    const ag = calculateAgeing(w.dueDate, w.status);
+    const fee = Number(w.fee) || 0;
+    const rec = Number(w.received) || 0;
+    const bal = fee - rec;
+    const pBadge = w.priority === 'Critical' ? 'badge-danger' : (w.priority === 'High' ? 'badge-warning' : 'badge-primary');
+    const sBadge = ['Completed', 'Filed'].includes(w.status) ? 'badge-success' : (w.status === 'In Progress' ? 'badge-primary' : 'badge-muted');
+
+    const feeCol = isAdminUnlocked 
+      ? `<td>₹${fee.toLocaleString('en-IN')}<br><small style="color:${bal > 0 ? 'var(--danger)' : 'var(--success)'}">Bal: ₹${bal.toLocaleString('en-IN')}</small></td>`
+      : `<td class="locked-sensitive is-locked">₹••••••</td>`;
+
+    return `
+      <tr>
+        <td><strong>${w.id}</strong></td>
+        <td><strong>${escapeHtml(w.clientName)}</strong></td>
+        <td><span class="badge badge-purple">${escapeHtml(w.category)}</span><br>${escapeHtml(w.type)}</td>
+        <td>${escapeHtml(w.period)}</td>
+        <td>${escapeHtml(w.staff)}</td>
+        <td>${w.dueDate}</td>
+        <td><span class="badge ${ag.badge}">${ag.label}</span></td>
+        <td><span class="badge ${sBadge}">${w.status}</span></td>
+        <td><span class="badge ${pBadge}">${w.priority}</span></td>
+        ${feeCol}
+        <td>
+          <div style="display:flex; gap:4px;">
+            <button class="btn-wa" title="WhatsApp Reminder" onclick="sendClientReminderWA('${w.id}')">📱 WA</button>
+            <button class="btn-mail" title="Email Reminder" onclick="sendClientReminderMail('${w.id}')">✉</button>
+          </div>
+        </td>
+        <td>
+          <div style="display:flex; gap:4px;">
+            <button class="btn btn-outline btn-sm" onclick="editWork('${w.id}')">✏️</button>
+            <button class="btn btn-outline btn-sm" onclick="openNotesModal('${w.id}')">📝 (${w.notes ? w.notes.length : 0})</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteWorkGated('${w.id}')">🗑️</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function openWorkModal(editId = null) {
+  document.getElementById('form-work').reset();
+  document.getElementById('work-edit-id').value = '';
+  document.getElementById('work-modal-title').innerText = "New Work Assignment";
+
+  if (editId) {
+    const w = works.find(item => item.id === editId);
+    if (w) {
+      document.getElementById('work-edit-id').value = w.id;
+      document.getElementById('work-modal-title').innerText = `Edit Assignment (${w.id})`;
+      document.getElementById('w-client').value = w.clientId;
+      document.getElementById('w-fy').value = w.fy;
+      document.getElementById('w-category').value = w.category;
+      onCategoryChange();
+      document.getElementById('w-type').value = w.type;
+      document.getElementById('w-period').value = w.period;
+      document.getElementById('w-due-date').value = w.dueDate;
+      document.getElementById('w-staff').value = w.staff;
+      document.getElementById('w-reviewer').value = w.reviewer || "";
+      document.getElementById('w-status').value = w.status;
+      document.getElementById('w-priority').value = w.priority;
+      document.getElementById('w-fee').value = w.fee || "";
+      document.getElementById('w-invoice-no').value = w.invoiceNo || "";
+      document.getElementById('w-received').value = w.received || 0;
+      document.getElementById('w-billing-status').value = w.billingStatus || "Not Billed";
+      document.getElementById('w-remarks').value = w.remarks || "";
+    }
+  } else {
+    document.getElementById('w-due-date').value = getTodayDateStr();
+  }
+  document.getElementById('modal-work').classList.add('show');
+}
+
+function editWork(id) {
+  openWorkModal(id);
+}
+
+function saveWorkItem(e) {
+  e.preventDefault();
+  const editId = document.getElementById('work-edit-id').value;
+  const clientId = document.getElementById('w-client').value;
+  const clientObj = clients.find(c => c.id === clientId);
+
+  const workData = {
+    id: editId || `WRK-26-${String(works.length + 1).padStart(4, '0')}`,
+    clientId: clientId,
+    clientName: clientObj ? clientObj.name : "Unknown",
+    fy: document.getElementById('w-fy').value,
+    category: document.getElementById('w-category').value,
+    type: document.getElementById('w-type').value,
+    period: document.getElementById('w-period').value,
+    dueDate: document.getElementById('w-due-date').value,
+    staff: document.getElementById('w-staff').value,
+    reviewer: document.getElementById('w-reviewer').value,
+    status: document.getElementById('w-status').value,
+    priority: document.getElementById('w-priority').value,
+    fee: Number(document.getElementById('w-fee').value) || 0,
+    invoiceNo: document.getElementById('w-invoice-no').value,
+    received: Number(document.getElementById('w-received').value) || 0,
+    billingStatus: document.getElementById('w-billing-status').value,
+    remarks: document.getElementById('w-remarks').value
+  };
+
+  if (editId) {
+    const idx = works.findIndex(w => w.id === editId);
+    if (idx !== -1) {
+      workData.notes = works[idx].notes || [];
+      works[idx] = workData;
+    }
+  } else {
+    workData.notes = [];
+    works.unshift(workData);
+  }
+
+  saveData('works');
+  closeModal('modal-work');
+  renderAllViews();
+}
+
+function deleteWorkGated(workId) {
+  requestAdminAuth(() => {
+    if (confirm(`Are you sure you want to permanently delete assignment ${workId}?`)) {
+      works = works.filter(w => w.id !== workId);
+      saveData('works');
+      renderAllViews();
+    }
+  });
+}
+
+function resetWorkFilters() {
+  document.getElementById('filter-work-client').value = "ALL";
+  document.getElementById('filter-work-staff').value = "ALL";
+  document.getElementById('filter-work-status').value = "ALL";
+  document.getElementById('filter-work-priority').value = "ALL";
+  document.getElementById('filter-work-unbilled').value = "ALL";
+  renderWorkTable();
+}
+
+/* 3. COMMUNICATIONS */
+function cleanMobileForWA(phone) {
+  if (!phone) return "";
+  let cleaned = String(phone).replace(/\D/g, '');
+  if (cleaned.length === 10) cleaned = '91' + cleaned;
+  return cleaned;
+}
+
+function sendClientReminderWA(workId) {
+  const w = works.find(item => item.id === workId);
+  if (!w) return;
+  const client = clients.find(c => c.id === w.clientId);
+  if (!client || !client.mobile) {
+    alert("Client contact mobile number not found!");
+    return;
+  }
+  const cleanPhone = cleanMobileForWA(client.mobile);
+  const firm = settings.firmName || "Damacharla & Co., Chartered Accountants";
+
+  const msg = 
+`Dear ${client.name},
+
+Greetings from ${firm}.
+
+This is a reminder regarding your upcoming statutory compliance:
+📌 Work: ${w.type} (${w.category})
+📅 Period: ${w.period}
+⏰ Statutory Due Date: ${w.dueDate}
+📊 Status: ${w.status}
+
+Kindly provide pending records at the earliest to ensure timely filing.
+
+Thank you,
+${firm}`;
+
+  window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+function sendClientReminderMail(workId) {
+  const w = works.find(item => item.id === workId);
+  if (!w) return;
+  const client = clients.find(c => c.id === w.clientId);
+  if (!client || !client.email) {
+    alert("Client email address not found!");
+    return;
+  }
+  const firm = settings.firmName || "Damacharla & Co.";
+  const subject = `Urgent Reminder: ${w.type} for ${w.period} Due on ${w.dueDate} - ${firm}`;
+  const body = 
+`Dear ${client.contact || client.name},
+
+We hope this email finds you well.
+
+This is a reminder regarding your statutory compliance filing handled by ${firm}:
+
+• Compliance: ${w.type}
+• Financial Period: ${w.period}
+• Filing Due Date: ${w.dueDate}
+• Current Work Status: ${w.status}
+
+Please share the required documents so our team can complete the draft within schedule.
+
+Warm regards,
+Team ${firm}`;
+
+  window.location.href = `mailto:${client.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+function renderRemindersHub() {
+  const active = works.filter(w => !['Completed', 'Filed', 'Cancelled'].includes(w.status));
+  const overdue = active.filter(w => calculateAgeing(w.dueDate, w.status).isOverdue);
+  const docPending = active.filter(w => w.status === 'Pending Client Data');
+  const staffPending = active.filter(w => ['Not Started', 'Assigned', 'In Progress'].includes(w.status));
+  const feeOverdue = works.filter(w => (Number(w.fee) || 0) > (Number(w.received) || 0));
+
+  document.getElementById('comm-overdue-count').innerText = overdue.length;
+  document.getElementById('comm-doc-pending-count').innerText = docPending.length;
+  document.getElementById('comm-staff-pending-count').innerText = staffPending.length;
+  document.getElementById('comm-fee-overdue-count').innerText = isAdminUnlocked ? feeOverdue.length : '••';
+
+  const queue = [...active].sort((a,b) => new Date(a.dueDate) - new Date(b.dueDate)).slice(0, 10);
+  const tbody = document.getElementById('comm-queue-body');
+  if (queue.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:14px; color:#64748b;">No pending dispatches!</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = queue.map(w => {
+    const ag = calculateAgeing(w.dueDate, w.status);
+    const c = clients.find(cl => cl.id === w.clientId) || { mobile: "", email: "" };
+    return `
+      <tr>
+        <td><strong>${escapeHtml(w.clientName)}</strong></td>
+        <td>${escapeHtml(w.type)}</td>
+        <td>${w.dueDate}</td>
+        <td><span class="badge ${ag.badge}">${ag.label}</span></td>
+        <td>${c.mobile || 'No Mobile'}<br><small>${c.email || ''}</small></td>
+        <td>
+          <div style="display:flex; gap:4px;">
+            <button class="btn-wa" onclick="sendClientReminderWA('${w.id}')">📱 WA</button>
+            <button class="btn-mail" onclick="sendClientReminderMail('${w.id}')">✉️</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+  previewStaffDigest();
+}
+
+function previewStaffDigest() {
+  const staffName = document.getElementById('comm-staff-select').value;
+  const staffWorks = works.filter(w => w.staff === staffName && !['Completed', 'Filed', 'Cancelled'].includes(w.status));
+
+  let preview = `Tasks assigned to ${staffName}:\n`;
+  if (staffWorks.length === 0) {
+    preview += "No pending tasks assigned.";
+  } else {
+    staffWorks.forEach((w, idx) => {
+      preview += `${idx + 1}. [${w.dueDate}] ${w.clientName} - ${w.type} (${w.status})\n`;
+    });
+  }
+  document.getElementById('comm-staff-digest-preview').value = preview;
+}
+
+function sendStaffDigestWA() {
+  const staffName = document.getElementById('comm-staff-select').value;
+  const sObj = staff.find(s => s.name === staffName);
+  if (!sObj || !sObj.mobile) {
+    alert("Selected staff phone number not found!");
+    return;
+  }
+  const cleanPhone = cleanMobileForWA(sObj.mobile);
+  const text = document.getElementById('comm-staff-digest-preview').value;
+  window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`, '_blank');
+}
+
+function sendStaffDigestMail() {
+  const staffName = document.getElementById('comm-staff-select').value;
+  const sObj = staff.find(s => s.name === staffName);
+  if (!sObj || !sObj.email) {
+    alert("Selected staff email not found!");
+    return;
+  }
+  const text = document.getElementById('comm-staff-digest-preview').value;
+  window.location.href = `mailto:${sObj.email}?subject=Daily Work Assignment Digest&body=${encodeURIComponent(text)}`;
+}
+
+/* 4. CLIENT MASTER */
+function renderClientTable() {
+  const tbody = document.getElementById('client-table-body');
+  if (clients.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:18px;">No clients configured. Click "Add Client" to create one.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = clients.map(c => `
+    <tr>
+      <td><strong>${c.id}</strong></td>
+      <td><strong>${escapeHtml(c.name)}</strong><br><small style="color:var(--text-muted)">${escapeHtml(c.tradeName || c.name)}</small></td>
+      <td><span class="badge badge-purple">${escapeHtml(c.constitution)}</span></td>
+      <td>PAN: ${c.pan || 'N/A'}<br><small>GST: ${c.gstin || 'None'}</small></td>
+      <td>${escapeHtml(c.contact || '')}</td>
+      <td>${c.mobile || 'N/A'}<br><small>${c.email || ''}</small></td>
+      <td><span class="badge badge-cyan">${escapeHtml(c.category || 'General')}</span></td>
+      <td><span class="badge ${c.status === 'Active' ? 'badge-success' : 'badge-danger'}">${c.status}</span></td>
+      <td>
+        <div style="display:flex; gap:4px;">
+          ${c.mobile ? `<a class="btn-wa" href="https://wa.me/${cleanMobileForWA(c.mobile)}" target="_blank">📱 WA</a>` : ''}
+          ${c.email ? `<a class="btn-mail" href="mailto:${c.email}">✉</a>` : ''}
+        </div>
+      </td>
+      <td>
+        <div style="display:flex; gap:4px;">
+          <button class="btn btn-outline btn-sm" onclick="editClient('${c.id}')">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteClientGated('${c.id}')">🗑️</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function openClientModal(editId = null) {
+  document.getElementById('form-client').reset();
+  document.getElementById('c-edit-id').value = '';
+  document.getElementById('client-modal-title').innerText = "Add New Client";
+
+  if (editId) {
+    const c = clients.find(item => item.id === editId);
+    if (c) {
+      document.getElementById('c-edit-id').value = c.id;
+      document.getElementById('client-modal-title').innerText = `Edit Client (${c.id})`;
+      document.getElementById('c-name').value = c.name;
+      document.getElementById('c-trade-name').value = c.tradeName || "";
+      document.getElementById('c-constitution').value = c.constitution;
+      document.getElementById('c-pan').value = c.pan;
+      document.getElementById('c-gstin').value = c.gstin || "";
+      document.getElementById('c-contact-person').value = c.contact || "";
+      document.getElementById('c-mobile').value = c.mobile;
+      document.getElementById('c-email').value = c.email;
+      document.getElementById('c-category').value = c.category || "GST";
+      document.getElementById('c-status').value = c.status || "Active";
+      document.getElementById('c-address').value = c.address || "";
+    }
+  }
+  document.getElementById('modal-client').classList.add('show');
+}
+
+function editClient(id) {
+  openClientModal(id);
+}
+
+function saveClient(e) {
+  e.preventDefault();
+  const editId = document.getElementById('c-edit-id').value;
+  const clientData = {
+    id: editId || `CLI-${String(clients.length + 1).padStart(3, '0')}`,
+    name: document.getElementById('c-name').value.trim(),
+    tradeName: document.getElementById('c-trade-name').value.trim(),
+    constitution: document.getElementById('c-constitution').value,
+    pan: document.getElementById('c-pan').value.trim().toUpperCase(),
+    gstin: document.getElementById('c-gstin').value.trim().toUpperCase(),
+    contact: document.getElementById('c-contact-person').value.trim(),
+    mobile: document.getElementById('c-mobile').value.trim(),
+    email: document.getElementById('c-email').value.trim(),
+    category: document.getElementById('c-category').value,
+    status: document.getElementById('c-status').value,
+    address: document.getElementById('c-address').value.trim()
+  };
+
+  if (editId) {
+    const idx = clients.findIndex(c => c.id === editId);
+    if (idx !== -1) clients[idx] = clientData;
+  } else {
+    clients.unshift(clientData);
+  }
+
+  saveData('clients');
+  closeModal('modal-client');
+  populateDropdowns();
+  renderAllViews();
+}
+
+function deleteClientGated(clientId) {
+  requestAdminAuth(() => {
+    if (confirm(`Permanently delete client ${clientId}? This will not automatically remove historic assignments.`)) {
+      clients = clients.filter(c => c.id !== clientId);
+      saveData('clients');
+      populateDropdowns();
+      renderAllViews();
+    }
+  });
+}
+
+/* 5. STAFF MASTER */
+function renderStaffView() {
+  const cardsContainer = document.getElementById('staff-summary-cards');
+  cardsContainer.innerHTML = staff.map(s => {
+    const assigned = works.filter(w => w.staff === s.name && !['Completed', 'Filed', 'Cancelled'].includes(w.status));
+    const overdue = assigned.filter(w => calculateAgeing(w.dueDate, w.status).isOverdue);
+    const alertClass = overdue.length > 0 ? 'alert' : 'info';
+    return `
+      <div class="stat-card ${alertClass}">
+        <div class="stat-label">${escapeHtml(s.name)} (${s.designation})</div>
+        <div class="stat-val">${assigned.length} Active</div>
+        <div class="stat-sub">${overdue.length} overdue assignments</div>
+      </div>
+    `;
+  }).join('');
+
+  const tbody = document.getElementById('staff-table-body');
+  tbody.innerHTML = staff.map(s => {
+    const total = works.filter(w => w.staff === s.name);
+    const active = total.filter(w => !['Completed', 'Filed', 'Cancelled'].includes(w.status));
+    const overdue = active.filter(w => calculateAgeing(w.dueDate, w.status).isOverdue);
+    const completed = total.filter(w => ['Completed', 'Filed'].includes(w.status));
+
+    return `
+      <tr>
+        <td><strong>${escapeHtml(s.name)}</strong></td>
+        <td>${s.designation}</td>
+        <td>${s.department}</td>
+        <td>${total.length}</td>
+        <td><span class="badge badge-primary">${active.length}</span></td>
+        <td><span class="badge ${overdue.length > 0 ? 'badge-danger' : 'badge-muted'}">${overdue.length}</span></td>
+        <td><span class="badge badge-success">${completed.length}</span></td>
+        <td>${s.mobile || ''}<br><small>${s.email || ''}</small></td>
+        <td>
+          ${s.mobile ? `<a class="btn-wa" href="https://wa.me/${cleanMobileForWA(s.mobile)}" target="_blank">📱 WhatsApp</a>` : ''}
+        </td>
+        <td>
+          <div style="display:flex; gap:4px;">
+            <button class="btn btn-outline btn-sm" onclick="editStaff('${s.id}')">✏️</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteStaffGated('${s.id}')">🗑️️</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function openStaffModal(editId = null) {
+  document.getElementById('form-staff').reset();
+  document.getElementById('s-edit-id').value = '';
+  document.getElementById('staff-modal-title').innerText = "Add Staff Member";
+
+  if (editId) {
+    const s = staff.find(item => item.id === editId);
+    if (s) {
+      document.getElementById('s-edit-id').value = s.id;
+      document.getElementById('staff-modal-title').innerText = `Edit Staff (${s.name})`;
+      document.getElementById('s-name').value = s.name;
+      document.getElementById('s-desig').value = s.designation;
+      document.getElementById('s-dept').value = s.department;
+      document.getElementById('s-mobile').value = s.mobile;
+      document.getElementById('s-email').value = s.email || "";
+    }
+  }
+  document.getElementById('modal-staff').classList.add('show');
+}
+
+function editStaff(id) {
+  openStaffModal(id);
+}
+
+function saveStaff(e) {
+  e.preventDefault();
+  const editId = document.getElementById('s-edit-id').value;
+  const staffData = {
+    id: editId || `STF-${String(staff.length + 1).padStart(2, '0')}`,
+    name: document.getElementById('s-name').value.trim(),
+    designation: document.getElementById('s-desig').value,
+    department: document.getElementById('s-dept').value,
+    mobile: document.getElementById('s-mobile').value.trim(),
+    email: document.getElementById('s-email').value.trim()
+  };
+
+  if (editId) {
+    const idx = staff.findIndex(s => s.id === editId);
+    if (idx !== -1) staff[idx] = staffData;
+  } else {
+    staff.push(staffData);
+  }
+
+  saveData('staff');
+  closeModal('modal-staff');
+  populateDropdowns();
+  renderAllViews();
+}
+
+function deleteStaffGated(staffId) {
+  requestAdminAuth(() => {
+    if (confirm("Permanently delete this staff member?")) {
+      staff = staff.filter(s => s.id !== staffId);
+      saveData('staff');
+      populateDropdowns();
+      renderAllViews();
+    }
+  });
+}
+
+/* 6. CALENDAR */
+function renderCalendar() {
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  document.getElementById('cal-month-title').innerText = `${monthNames[currentCalMonth]} ${currentCalYear}`;
+
+  const grid = document.getElementById('calendar-grid');
+  grid.innerHTML = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => `<div class="cal-day-name">${d}</div>`).join('');
+
+  const firstDay = new Date(currentCalYear, currentCalMonth, 1).getDay();
+  const daysInMonth = new Date(currentCalYear, currentCalMonth + 1, 0).getDate();
+  const todayStr = getTodayDateStr();
+
+  for (let i = 0; i < firstDay; i++) {
+    grid.innerHTML += `<div class="cal-cell other-month"></div>`;
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${currentCalYear}-${String(currentCalMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const dayWorks = works.filter(w => w.dueDate === dateStr);
+    const isToday = dateStr === todayStr;
+
+    let itemsHtml = dayWorks.map(w => {
+      const bg = ['Completed', 'Filed'].includes(w.status) ? '#dcfce7; color:#166534;' : (w.priority === 'Critical' ? '#fee2e2; color:#991b1b;' : '#eff6ff; color:#1e40af;');
+      return `<div class="cal-item" style="background:${bg}" title="${escapeHtml(w.clientName)} - ${escapeHtml(w.type)}">${escapeHtml(w.clientName.substring(0, 10))}..: ${w.type}</div>`;
+    }).join('');
+
+    grid.innerHTML += `
+      <div class="cal-cell ${isToday ? 'today' : ''}" onclick="filterWorkByDate('${dateStr}')">
+        <strong>${d}</strong>
+        ${itemsHtml}
+      </div>
+    `;
+  }
+}
+
+function changeCalMonth(delta) {
+  currentCalMonth += delta;
+  if (currentCalMonth < 0) { currentCalMonth = 11; currentCalYear--; }
+  if (currentCalMonth > 11) { currentCalMonth = 0; currentCalYear++; }
+  renderCalendar();
+}
+
+function resetCalToToday() {
+  currentCalMonth = new Date().getMonth();
+  currentCalYear = new Date().getFullYear();
+  renderCalendar();
+}
+
+function filterWorkByDate(dateStr) {
+  switchNav('work');
+  document.getElementById('global-search').value = dateStr;
+  onGlobalSearch(dateStr);
+}
+
+/* 7. BILLING VIEW */
+function renderBillingTable() {
+  const tbody = document.getElementById('billing-table-body');
+  if (!isAdminUnlocked) {
+    tbody.innerHTML = `<tr><td colspan="13" style="text-align:center; padding:20px;">🔒 Billing register is locked. Unlock via the top bar using your Partner PIN.</td></tr>`;
+    return;
+  }
+
+  const billableWorks = works.filter(w => (Number(w.fee) || 0) > 0 || w.invoiceNo);
+  if (billableWorks.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="13" style="text-align:center; padding:18px;">No billings registered. Add fees while creating or editing works.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = billableWorks.map(w => {
+    const fee = Number(w.fee) || 0;
+    const gst = Math.round(fee * 0.18);
+    const total = fee + gst;
+    const rec = Number(w.received) || 0;
+    const bal = total - rec;
+
+    return `
+      <tr>
+        <td><strong>${w.id}</strong></td>
+        <td><strong>${escapeHtml(w.clientName)}</strong></td>
+        <td>${escapeHtml(w.type)} (${escapeHtml(w.period)})</td>
+        <td>${w.invoiceNo || 'Draft'}</td>
+        <td>${w.dueDate}</td>
+        <td>₹${fee.toLocaleString('en-IN')}</td>
+        <td>₹${gst.toLocaleString('en-IN')}</td>
+        <td><strong>₹${total.toLocaleString('en-IN')}</strong></td>
+        <td style="color:var(--success)">₹${rec.toLocaleString('en-IN')}</td>
+        <td style="color:${bal > 0 ? 'var(--danger)' : 'var(--success)'}"><strong>₹${bal.toLocaleString('en-IN')}</strong></td>
+        <td><span class="badge ${bal <= 0 ? 'badge-success' : 'badge-warning'}">${w.billingStatus || (bal <= 0 ? 'Paid' : 'Unpaid')}</span></td>
+        <td><button class="btn-wa" onclick="sendInvoiceReminderWA('${w.id}')">📱 Remind</button></td>
+        <td><button class="btn btn-outline btn-sm" onclick="editWork('${w.id}')">✏️</button></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function sendInvoiceReminderWA(workId) {
+  const w = works.find(item => item.id === workId);
+  if (!w) return;
+  const client = clients.find(c => c.id === w.clientId);
+  if (!client || !client.mobile) {
+    alert("Client phone number not available!");
+    return;
+  }
+  const cleanPhone = cleanMobileForWA(client.mobile);
+  const fee = Number(w.fee) || 0;
+  const total = fee + Math.round(fee * 0.18);
+  const bal = total - (Number(w.received) || 0);
+
+  const msg = 
+`Dear ${client.name},
+
+Greetings from ${settings.firmName || "Damacharla & Co."}.
+
+This is a gentle payment reminder for our professional services:
+Invoice No: ${w.invoiceNo || 'Proforma'}
+Assignment: ${w.type} (${w.period})
+Outstanding Amount: ₹${bal.toLocaleString('en-IN')}
+
+Kindly process the transfer to our official firm bank account at your earliest convenience.
+
+Warm regards,
+${settings.firmName || "Damacharla & Co."}`;
+
+  window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+/* 8. COLLECTIONS & AGEING */
+function renderAgeingTable() {
+  const tbody = document.getElementById('ageing-table-body');
+  if (!isAdminUnlocked) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px;">🔒 Collections module is password protected.</td></tr>`;
+    document.getElementById('age-0-30').innerText = '₹••••••';
+    document.getElementById('age-31-60').innerText = '₹••••••';
+    document.getElementById('age-61-90').innerText = '₹••••••';
+    document.getElementById('age-90-plus').innerText = '₹••••••';
+    return;
+  }
+
+  let bucket0 = 0, bucket31 = 0, bucket61 = 0, bucket90 = 0;
+  const clientMap = {};
+
+  works.forEach(w => {
+    const fee = Number(w.fee) || 0;
+    const gst = Math.round(fee * 0.18);
+    const total = fee + gst;
+    const rec = Number(w.received) || 0;
+    const bal = total - rec;
+
+    if (bal > 0) {
+      bucket0 += bal;
+      if (!clientMap[w.clientId]) {
+        clientMap[w.clientId] = {
+          name: w.clientName,
+          totalInvoiced: 0,
+          totalReceived: 0,
+          balance: 0,
+          contact: ""
+        };
+      }
+      clientMap[w.clientId].totalInvoiced += total;
+      clientMap[w.clientId].totalReceived += rec;
+      clientMap[w.clientId].balance += bal;
+    }
+  });
+
+  document.getElementById('age-0-30').innerText = `₹${bucket0.toLocaleString('en-IN')}`;
+  document.getElementById('age-31-60').innerText = `₹${bucket31.toLocaleString('en-IN')}`;
+  document.getElementById('age-61-90').innerText = `₹${bucket61.toLocaleString('en-IN')}`;
+  document.getElementById('age-90-plus').innerText = `₹${bucket90.toLocaleString('en-IN')}`;
+
+  const cList = Object.values(clientMap);
+  if (cList.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:18px;">No outstanding balances. All dues cleared!</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = cList.map(c => `
+    <tr>
+      <td><strong>${escapeHtml(c.name)}</strong></td>
+      <td>₹${c.totalInvoiced.toLocaleString('en-IN')}</td>
+      <td>₹${c.totalReceived.toLocaleString('en-IN')}</td>
+      <td style="color:var(--danger)"><strong>₹${c.balance.toLocaleString('en-IN')}</strong></td>
+      <td><span class="badge badge-warning">0-30 Days</span></td>
+      <td>Client Principal</td>
+      <td><button class="btn btn-wa" onclick="alert('Follow up dispatched')">📱 Remind</button></td>
+    </tr>
+  `).join('');
+}
+
+/* 9. REPORTS */
+function loadReportType(type) {
+  const thead = document.getElementById('report-head');
+  const tbody = document.getElementById('report-body');
+  document.getElementById('print-date').innerText = new Date().toLocaleString('en-IN');
+
+  if (type === 'pending') {
+    thead.innerHTML = `<tr><th>ID</th><th>Client</th><th>Work</th><th>Period</th><th>Staff</th><th>Due Date</th><th>Status</th></tr>`;
+    const pending = works.filter(w => !['Completed', 'Filed'].includes(w.status));
+    tbody.innerHTML = pending.map(w => `
+      <tr>
+        <td>${w.id}</td>
+        <td>${escapeHtml(w.clientName)}</td>
+        <td>${escapeHtml(w.type)}</td>
+        <td>${escapeHtml(w.period)}</td>
+        <td>${escapeHtml(w.staff)}</td>
+        <td>${w.dueDate}</td>
+        <td>${w.status}</td>
+      </tr>
+    `).join('');
+  } else if (type === 'overdue') {
+    thead.innerHTML = `<tr><th>ID</th><th>Client</th><th>Work</th><th>Staff</th><th>Due Date</th><th>Overdue Days</th></tr>`;
+    const overdue = works.filter(w => calculateAgeing(w.dueDate, w.status).isOverdue);
+    tbody.innerHTML = overdue.map(w => {
+      const ag = calculateAgeing(w.dueDate, w.status);
+      return `
+        <tr>
+          <td>${w.id}</td>
+          <td>${escapeHtml(w.clientName)}</td>
+          <td>${escapeHtml(w.type)}</td>
+          <td>${escapeHtml(w.staff)}</td>
+          <td>${w.dueDate}</td>
+          <td style="color:var(--danger)"><strong>${ag.days} Days</strong></td>
+        </tr>
+      `;
+    }).join('');
+  } else if (type === 'unbilled') {
+    thead.innerHTML = `<tr><th>ID</th><th>Client</th><th>Work</th><th>Completed Date</th><th>Staff</th><th>Estimated Fee</th></tr>`;
+    const unbilled = works.filter(w => ['Completed', 'Filed'].includes(w.status) && (w.billingStatus === 'Not Billed' || !w.billingStatus));
+    tbody.innerHTML = unbilled.map(w => `
+      <tr>
+        <td>${w.id}</td>
+        <td>${escapeHtml(w.clientName)}</td>
+        <td>${escapeHtml(w.type)}</td>
+        <td>${w.dueDate}</td>
+        <td>${escapeHtml(w.staff)}</td>
+        <td>${isAdminUnlocked ? '₹' + (Number(w.fee) || 0).toLocaleString('en-IN') : '••••••'}</td>
+      </tr>
+    `).join('');
+  } else if (type === 'staff') {
+    thead.innerHTML = `<tr><th>Staff Name</th><th>Designation</th><th>Active Tasks</th><th>Overdue</th></tr>`;
+    tbody.innerHTML = staff.map(s => {
+      const active = works.filter(w => w.staff === s.name && !['Completed', 'Filed'].includes(w.status));
+      const overdue = active.filter(w => calculateAgeing(w.dueDate, w.status).isOverdue);
+      return `
+        <tr>
+          <td>${escapeHtml(s.name)}</td>
+          <td>${s.designation}</td>
+          <td>${active.length}</td>
+          <td style="color:${overdue.length > 0 ? 'var(--danger)' : 'var(--text-main)'}">${overdue.length}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+}
+
+/* 10. FIRM SETTINGS & BACKUPS */
+function saveFirmSettings() {
+  settings.firmName = document.getElementById('setting-firm-name').value.trim();
+  settings.firmGstin = document.getElementById('setting-firm-gstin').value.trim();
+  settings.firmPhone = document.getElementById('setting-firm-phone').value.trim();
+  settings.firmAddress = document.getElementById('setting-firm-addr').value.trim();
+  saveData('settings');
+  applyFirmSettingsToUI();
+  alert("Firm profile updated successfully!");
+}
+
+function updateAdminPassword() {
+  const cur = document.getElementById('pwd-current').value;
+  const n1 = document.getElementById('pwd-new').value;
+  const n2 = document.getElementById('pwd-confirm').value;
+
+  if (cur !== (settings.adminPin || "ca1234")) {
+    alert("Incorrect current password!");
+    return;
+  }
+  if (!n1 || n1.length < 4) {
+    alert("New password must be at least 4 characters long!");
+    return;
+  }
+  if (n1 !== n2) {
+    alert("New passwords do not match!");
+    return;
+  }
+
+  settings.adminPin = n1;
+  saveData('settings');
+  document.getElementById('pwd-current').value = '';
+  document.getElementById('pwd-new').value = '';
+  document.getElementById('pwd-confirm').value = '';
+  alert("Security PIN updated successfully!");
+}
+
+function onUploadLogo(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    settings.logoBase64 = evt.target.result;
+    saveData('settings');
+    applyFirmSettingsToUI();
+  };
+  reader.readAsDataURL(file);
+}
+
+function resetFirmLogo() {
+  settings.logoBase64 = "";
+  saveData('settings');
+  applyFirmSettingsToUI();
+}
+
+function exportFullJSONBackup() {
+  const fullBackup = {
+    settings,
+    fyList,
+    taxonomy,
+    staff,
+    clients,
+    works,
+    exportedAt: new Date().toISOString()
+  };
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullBackup, null, 2));
+  const dlAnchor = document.createElement('a');
+  dlAnchor.setAttribute("href", dataStr);
+  dlAnchor.setAttribute("download", `CA_Office_Tracker_Backup_${getTodayDateStr()}.json`);
+  dlAnchor.click();
+}
+
+function restoreJSONBackup(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  requestAdminAuth(() => {
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      try {
+        const parsed = JSON.parse(evt.target.result);
+        if (parsed.clients && parsed.works) {
+          settings = parsed.settings || DEFAULT_SETTINGS;
+          fyList = parsed.fyList || DEFAULT_FY;
+          taxonomy = parsed.taxonomy || DEFAULT_TAXONOMY;
+          staff = parsed.staff || SAMPLE_STAFF;
+          clients = parsed.clients || [];
+          works = parsed.works || [];
+
+          saveData('settings');
+          saveData('fy');
+          saveData('taxonomy');
+          saveData('staff');
+          saveData('clients');
+          saveData('works');
+
+          populateDropdowns();
+          applyFirmSettingsToUI();
+          renderAllViews();
+          alert("Backup successfully restored!");
+        } else {
+          alert("Invalid backup JSON format!");
+        }
+      } catch (err) {
+        alert("Error parsing JSON backup file!");
+      }
+    };
+    reader.readAsText(file);
+  });
+}
+
+function confirmWipeAllData() {
+  requestAdminAuth(() => {
+    if (confirm("⚠️ WARNING: This will permanently wipe all clients, works, and records from this browser. Proceed?")) {
+      localStorage.clear();
+      location.reload();
+    }
+  });
+}
+
+/* CSV UTILITIES */
+function exportWorksCSV() {
+  let csv = "ID,Client,Category,Type,Period,Staff,Reviewer,DueDate,Priority,Status\n";
+  works.forEach(w => {
+    csv += `"${w.id}","${w.clientName}","${w.category}","${w.type}","${w.period}","${w.staff}","${w.reviewer || ''}","${w.dueDate}","${w.priority}","${w.status}"\n`;
+  });
+  downloadCSV(csv, `Works_Export_${getTodayDateStr()}.csv`);
+}
+
+function exportClientsCSV() {
+  let csv = "ID,Name,TradeName,Constitution,PAN,GSTIN,Contact,Mobile,Email,Status,Category,Address\n";
+  clients.forEach(c => {
+    csv += `"${c.id}","${c.name}","${c.tradeName || ''}","${c.constitution}","${c.pan}","${c.gstin || ''}","${c.contact || ''}","${c.mobile}","${c.email}","${c.status}","${c.category}","${c.address || ''}"\n`;
+  });
+  downloadCSV(csv, `Clients_Export_${getTodayDateStr()}.csv`);
+}
+
+function exportBillingCSV() {
+  if (!isAdminUnlocked) {
+    requestAdminAuth(exportBillingCSV);
+    return;
+  }
+  let csv = "ID,Client,Work,InvoiceNo,DueDate,Fee,GST,Total,Received,Balance,Status\n";
+  works.forEach(w => {
+    const fee = Number(w.fee) || 0;
+    const gst = Math.round(fee * 0.18);
+    const total = fee + gst;
+    const rec = Number(w.received) || 0;
+    csv += `"${w.id}","${w.clientName}","${w.type}","${w.invoiceNo || ''}","${w.dueDate}",${fee},${gst},${total},${rec},${total - rec},"${w.billingStatus}"\n`;
+  });
+  downloadCSV(csv, `Billing_Export_${getTodayDateStr()}.csv`);
+}
+
+function downloadClientTemplate() {
+  const csv = "Name,TradeName,Constitution,PAN,GSTIN,Contact,Mobile,Email,Category,Status,Address\nABC Tech Pvt Ltd,ABC Tech,Pvt Ltd,ABCDE1234F,36ABCDE1234F1Z5,Ramesh Rao,9849012345,accounts@abctech.com,Comprehensive,Active,Hyderabad\n";
+  downloadCSV(csv, "Client_Import_Template.csv");
+}
+
+function importClientCSV(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    const lines = evt.target.result.split('\n').filter(l => l.trim().length > 0);
+    let count = 0;
+    for (let i = 1; i < lines.length; i++) {
+      const parts = lines[i].split(',').map(s => s.replace(/(^"|"$)/g, '').trim());
+      if (parts[0] && parts[3]) {
+        clients.push({
+          id: `CLI-${String(clients.length + 1).padStart(3, '0')}`,
+          name: parts[0],
+          tradeName: parts[1] || parts[0],
+          constitution: parts[2] || "Pvt Ltd",
+          pan: parts[3].toUpperCase(),
+          gstin: (parts[4] || "").toUpperCase(),
+          contact: parts[5] || "",
+          mobile: parts[6] || "",
+          email: parts[7] || "",
+          category: parts[8] || "General",
+          status: parts[9] || "Active",
+          address: parts[10] || ""
+        });
+        count++;
+      }
+    }
+    saveData('clients');
+    populateDropdowns();
+    renderAllViews();
+    alert(`Successfully imported ${count} clients from CSV!`);
+  };
+  reader.readAsText(file);
+}
+
+function downloadCSV(csvContent, filename) {
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+}
+
+/* WORK ACTIVITY LOGS & NOTES */
+function openNotesModal(workId) {
+  activeNotesWorkId = workId;
+  const w = works.find(item => item.id === workId);
+  if (!w) return;
+  document.getElementById('notes-title').innerText = `Activity Log - ${w.id} (${w.clientName})`;
+  renderNotesList(w.notes || []);
+  document.getElementById('new-note-text').value = '';
+  document.getElementById('modal-notes').classList.add('show');
+}
+
+function renderNotesList(notes) {
+  const list = document.getElementById('notes-history-list');
+  if (notes.length === 0) {
+    list.innerHTML = `<p style="font-size:11.5px; color:#64748b;">No notes recorded for this assignment.</p>`;
+    return;
+  }
+  list.innerHTML = notes.map(n => `
+    <div style="background:#f1f5f9; padding:6px 10px; border-radius:5px; font-size:11.5px;">
+      <div style="display:flex; justify-content:space-between; color:#475569; font-weight:600;">
+        <span>${n.staff || 'Staff'}</span>
+        <span>${n.date}</span>
+      </div>
+      <div style="margin-top:2px;">${escapeHtml(n.note)}</div>
+    </div>
+  `).join('');
+}
+
+function addWorkNote() {
+  const text = document.getElementById('new-note-text').value.trim();
+  if (!text) return;
+  const w = works.find(item => item.id === activeNotesWorkId);
+  if (!w) return;
+  if (!w.notes) w.notes = [];
+  w.notes.push({
+    date: new Date().toLocaleDateString('en-IN'),
+    staff: "Current User",
+    note: text
+  });
+  saveData('works');
+  renderNotesList(w.notes);
+  document.getElementById('new-note-text').value = '';
+  renderWorkTable();
+}
+
+/* GLOBAL SEARCH */
+function onGlobalSearch(query) {
+  const q = query.toLowerCase().trim();
+  if (!q) {
+    renderWorkTable();
+    return;
+  }
+  const filtered = works.filter(w => 
+    w.id.toLowerCase().includes(q) ||
+    w.clientName.toLowerCase().includes(q) ||
+    w.type.toLowerCase().includes(q) ||
+    w.staff.toLowerCase().includes(q) ||
+    w.dueDate.toLowerCase().includes(q)
+  );
+
+  const tbody = document.getElementById('work-table-body');
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="12" style="text-align:center; padding:18px;">No search results for "${escapeHtml(query)}"</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(w => {
+    const ag = calculateAgeing(w.dueDate, w.status);
+    const pBadge = w.priority === 'Critical' ? 'badge-danger' : 'badge-primary';
+    const sBadge = ['Completed', 'Filed'].includes(w.status) ? 'badge-success' : 'badge-primary';
+    const feeCol = isAdminUnlocked 
+      ? `<td>₹${(Number(w.fee) || 0).toLocaleString('en-IN')}</td>` 
+      : `<td class="locked-sensitive is-locked">₹••••••</td>`;
+
+    return `
+      <tr>
+        <td><strong>${w.id}</strong></td>
+        <td><strong>${escapeHtml(w.clientName)}</strong></td>
+        <td>${escapeHtml(w.category)} - ${escapeHtml(w.type)}</td>
+        <td>${escapeHtml(w.period)}</td>
+        <td>${escapeHtml(w.staff)}</td>
+        <td>${w.dueDate}</td>
+        <td><span class="badge ${ag.badge}">${ag.label}</span></td>
+        <td><span class="badge ${sBadge}">${w.status}</span></td>
+        <td><span class="badge ${pBadge}">${w.priority}</span></td>
+        ${feeCol}
+        <td><button class="btn-wa" onclick="sendClientReminderWA('${w.id}')">📱 WA</button></td>
+        <td><button class="btn btn-outline btn-sm" onclick="editWork('${w.id}')">✏️</button></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function renderAllViews() {
+  renderDashboard();
+  renderWorkTable();
+  renderClientTable();
+  renderStaffView();
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+}
+</script>
+</body>
+</html>
