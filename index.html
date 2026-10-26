@@ -1184,7 +1184,7 @@ table.data-table tbody tr:hover { background: #f8fafc; }
   </div>
 </div>
 
-<!-- 4. SECURITY PIN PROMPT MODAL (FORGOT PIN OPTION REMOVED) -->
+<!-- 4. SECURITY PIN PROMPT MODAL -->
 <div class="modal-backdrop" id="modal-auth">
   <div class="modal-box" style="max-width:380px;">
     <div class="modal-header">
@@ -1229,7 +1229,7 @@ table.data-table tbody tr:hover { background: #f8fafc; }
 
 <script>
 /* ================= GOOGLE APPS SCRIPT URL ================= */
-const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw52TfU7RYEBBfunx5xt8cGnktZwBb5qWH2FrpRAxO3-PqgUCnRUoi-D-QChqQfTr_V/exec";
+const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzVJII7wC0JTsXF4SsqbBM6Ic43tpylvYNZ0Cgf-vDvtrOTR3d9A7eJFGy4YnfbWn9AFw/exec";
 
 /* STORAGE KEYS */
 const STORAGE_KEYS = {
@@ -1460,17 +1460,27 @@ function buildDefaultWorks(clientList) {
   });
 }
 
+function safeParse(val) {
+  if (!val) return null;
+  if (typeof val === 'string') {
+    try {
+      return JSON.parse(val);
+    } catch (e) {
+      return val;
+    }
+  }
+  return val;
+}
+
 window.addEventListener('DOMContentLoaded', () => {
-  // 1. Instantly populate the tables from local defaults so nothing is ever blank
   loadLocalCache();
   populateDropdowns();
   renderAllViews();
   applyLockSecurityUI();
   
-  // 2. Perform background cloud sync without blocking user interaction
   setTimeout(() => {
     syncFromCloud();
-  }, 300);
+  }, 200);
 
   setInterval(syncFromCloud, 60000);
 });
@@ -1488,35 +1498,45 @@ function updateSyncStatus(msg, isSuccess = true) {
 async function syncFromCloud() {
   updateSyncStatus("🔄 Syncing...");
   try {
-    const res = await fetch(GOOGLE_APPS_SCRIPT_URL, { redirect: "follow" });
+    const cacheBuster = "?t=" + Date.now();
+    const res = await fetch(GOOGLE_APPS_SCRIPT_URL + cacheBuster, { redirect: "follow" });
     if (!res.ok) throw new Error("HTTP " + res.status);
     const cloud = await res.json();
     
-    // Auto-seed if database sheet is empty
+    // Auto-seed if database sheet is completely empty
     if (!cloud || Object.keys(cloud).length === 0 || (!cloud.clients && !cloud.works)) {
       updateSyncStatus("🚀 Seeding Cloud...");
       await seedCloudDatabase();
       return;
     }
 
-    if (cloud.works && Array.isArray(cloud.works) && cloud.works.length > 0) {
-      works = cloud.works;
+    const cloudWorks = safeParse(cloud.works);
+    if (cloudWorks && Array.isArray(cloudWorks) && cloudWorks.length > 0) {
+      works = cloudWorks;
       localStorage.setItem(STORAGE_KEYS.WORKS, JSON.stringify(works));
     }
-    if (cloud.clients && Array.isArray(cloud.clients) && cloud.clients.length > 0) {
-      clients = cloud.clients;
+    
+    const cloudClients = safeParse(cloud.clients);
+    if (cloudClients && Array.isArray(cloudClients) && cloudClients.length > 0) {
+      clients = cloudClients;
       localStorage.setItem(STORAGE_KEYS.CLIENTS, JSON.stringify(clients));
     }
-    if (cloud.staff && Array.isArray(cloud.staff) && cloud.staff.length > 0) {
-      staff = cloud.staff;
+    
+    const cloudStaff = safeParse(cloud.staff);
+    if (cloudStaff && Array.isArray(cloudStaff) && cloudStaff.length > 0) {
+      staff = cloudStaff;
       localStorage.setItem(STORAGE_KEYS.STAFF, JSON.stringify(staff));
     }
-    if (cloud.settings && typeof cloud.settings === 'object') {
-      settings = cloud.settings;
+    
+    const cloudSettings = safeParse(cloud.settings);
+    if (cloudSettings && typeof cloudSettings === 'object' && !Array.isArray(cloudSettings)) {
+      settings = cloudSettings;
       localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
     }
-    if (cloud.fyList && Array.isArray(cloud.fyList) && cloud.fyList.length > 0) {
-      fyList = cloud.fyList;
+    
+    const cloudFY = safeParse(cloud.fyList);
+    if (cloudFY && Array.isArray(cloudFY) && cloudFY.length > 0) {
+      fyList = cloudFY;
       localStorage.setItem(STORAGE_KEYS.FY_LIST, JSON.stringify(fyList));
     }
 
@@ -2134,10 +2154,10 @@ We hope this email finds you well.
 
 This is a reminder regarding your statutory compliance filing handled by ${firm}:
 
-• Compliance: ${w.type}
-• Financial Period: ${w.period}
-• Filing Due Date: ${w.dueDate}
-• Current Work Status: ${w.status}
+- Compliance: ${w.type}
+- Financial Period: ${w.period}
+- Filing Due Date: ${w.dueDate}
+- Current Work Status: ${w.status}
 
 Please share the required documents so our team can complete the draft within schedule.
 
@@ -2371,7 +2391,7 @@ function renderStaffView() {
         <td>
           <div style="display:flex; gap:4px;">
             <button class="btn btn-outline btn-sm" onclick="editStaff('${s.id}')">✏️</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteStaffGated('${s.id}')">🗑️️</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteStaffGated('${s.id}')">🗑</button>
           </div>
         </td>
       </tr>
